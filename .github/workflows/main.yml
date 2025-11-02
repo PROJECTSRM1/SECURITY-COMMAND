@@ -3,7 +3,7 @@ name: Deploy React (Vite) App to Azure Web App
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build-and-deploy:
