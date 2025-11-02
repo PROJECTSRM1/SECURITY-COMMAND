@@ -38,5 +38,4 @@ jobs:
         with:
           app-name: 'RJB-WEB-APP-SECURE'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
-          package: ./build
-
+          package: ./dist
