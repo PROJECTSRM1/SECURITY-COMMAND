@@ -40,8 +40,9 @@ const MenuItems = [
     },
     {
       key: 'CCTV AI Feeds',
-      label: 'CCTV AI Feeds',
+      label: 'Vehicle Recognition',
       menuIcon: PicCenterOutlined,
+      path:'/app/cctv-ai-feeds'
     },
     {
       key: 'Analytics & Reports',
