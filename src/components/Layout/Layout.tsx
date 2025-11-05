@@ -16,6 +16,7 @@ import {
 import { Layout, Menu, theme, Modal, message } from 'antd';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import HeaderBar from '../header/header';
+import { Path } from 'leaflet';
 
 const { Content, Sider } = Layout;
 const { confirm } = Modal;
@@ -26,7 +27,8 @@ const MenuItems = [
     {
       key: 'Live Map',
       menuIcon: HeatMapOutlined,
-      label: 'Live Map',
+      label: 'Crowded People',
+      path:'/app/crowded-people'
     },
     {
       key: 'Officer Tracking',
@@ -37,6 +39,7 @@ const MenuItems = [
       key: 'Gate Pass & Visitors',
       label: 'Gate Pass & Visitors',
       menuIcon: GatewayOutlined,
+      path:'/app/gate-pass'
     },
     {
       key: 'CCTV AI Feeds',

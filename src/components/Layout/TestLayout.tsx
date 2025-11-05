@@ -19,7 +19,7 @@ const LayoutComponent: React.FC = () => {
       <div style={{ padding: '20px' }}>
 
 
-        <Row justify={"space-between"}>
+        {/* <Row justify={"space-between"}>
 
           <Col
             xs={{ flex: '100%' }}
@@ -38,14 +38,14 @@ const LayoutComponent: React.FC = () => {
                   height:'110px'
                 }}
             >
-              {/* <Statistic
+              <Statistic
                 title="On-Post Officers"
                 value={465}
                 // precision={2}
                 // valueStyle={{ color: '#3f8600' }}
                 prefix={<UsergroupAddOutlined style={{ color: "brown" }} />}
                 suffix="/ 600"
-              /> */}
+              />
             </Card>
           </Col>
 
@@ -66,14 +66,14 @@ const LayoutComponent: React.FC = () => {
                   height:'110px'
                 }}
             >
-              {/* <Statistic
+              <Statistic
                 title="Alerts Today"
                 value={26}
                 // precision={2}
                 // valueStyle={{ color: '#3f8600' }}
                 prefix={<AlertOutlined style={{ color: "red" }} />}
               // suffix="%"
-              /> */}
+              />
             </Card>
           </Col>
 
@@ -94,14 +94,14 @@ const LayoutComponent: React.FC = () => {
                   height:'110px'
                 }}
             >
-              {/* <Statistic
+              <Statistic
                 title="Suspisious Activities"
                 value={3}
                 // precision={2}
                 // valueStyle={{ color: 'yellow' }}
                 prefix={<AimOutlined style={{ color: "orange" }} />}
               // suffix="%"
-              /> */}
+              />
             </Card>
           </Col>
 
@@ -122,20 +122,20 @@ const LayoutComponent: React.FC = () => {
                   height:'110px'
                 }}
             >
-              {/* <Statistic
+              <Statistic
                 title="Devices Offline"
                 value={12}
                 // precision={2}
                 // valueStyle={{ color: '#3f8600' }}
                 prefix={<QuestionCircleOutlined style={{ color: "gray" }} />}
               // suffix="%"
-              /> */}
+              />
             </Card>
           </Col>
 
-        </Row>
+        </Row> */}
 
-        <Row justify={"space-between"}>
+        {/* <Row justify={"space-between"}>
 
           <Col
             xs={{ flex: '100%' }}
@@ -156,10 +156,10 @@ const LayoutComponent: React.FC = () => {
             style={{ marginTop: "20px", }}
             className='rjb-header-cards'
           >
-            <h4 style={{margin:'10px'}}>Shits and Rosters Summary</h4>
+            <h4 style={{margin:'10px'}}>Shifts and Rosters Summary</h4>
             <TableComponent />
           </Col>
-        </Row>
+        </Row> */}
 
         <div>
         <Row justify={"space-between"}>
@@ -249,6 +249,32 @@ const LayoutComponent: React.FC = () => {
           </Col>
 
         </Row>
+        <Row justify={"space-between"}>
+
+          <Col
+            xs={{ flex: '100%' }}
+            md={{ flex: '70%' }}
+            style={{ marginTop: "20px", }}
+            className='rjb-header-cards'
+          >
+            <div style={{ background: '#e6f4ff', padding: '10px', color: "rgb(81, 153, 205)", fontSize: '18px', fontWeight: "bold" }}>{'Live Site'}</div>
+
+            <MapsComponent />
+          </Col>
+
+          <Col
+            xs={{ flex: '100%' }}
+            sm={{ flex: '50%' }}
+            md={{ flex: '40%' }}
+            lg={{ flex: '25%' }}
+            style={{ marginTop: "20px", }}
+            className='rjb-header-cards'
+          >
+            <h4 style={{margin:'10px'}}>Shifts and Rosters Summary</h4>
+            <TableComponent />
+          </Col>
+        </Row> 
+
         </div>
 
       </div>

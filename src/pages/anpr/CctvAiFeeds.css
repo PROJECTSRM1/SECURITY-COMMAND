@@ -55,9 +55,8 @@
 
 /* Right: table */
 .cctv-right {
-  width: 360px;
+  width: 440px;             
   height: 86vh;
-  max-width: 38%;
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 6px 18px rgba(17, 24, 39, 0.06);
@@ -65,7 +64,9 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  overflow: hidden;          
 }
+
 
 .cctv-heading {
   margin: 0 0 12px 0;
@@ -78,6 +79,7 @@
 .cctv-table-wrap {
   overflow-y: auto;
   flex: 1 1 auto;
+  overflow-x: hidden;
 }
 
 /* Table */
@@ -87,6 +89,8 @@
   font-size: 14px;
   color: #111827;
   min-width: 0;
+  table-layout: fixed;
+  word-wrap: break-word;
 }
 
 .cctv-table thead th {
