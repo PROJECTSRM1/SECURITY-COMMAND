@@ -33,16 +33,10 @@
   "devDependencies": {
     "@eslint/js": "^9.36.0",
     "@types/leaflet": "^1.9.21",
-<<<<<<< HEAD
     "@types/node": "^24.7.2",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
-=======
-    "@types/node": "^24.10.0",
-    "@types/react": "^19.1.16",
-    "@types/react-dom": "^19.1.9",
->>>>>>> aeb43e25f8da3b1354f8cf1dd3d1fa3fab0cb96f
     "@vitejs/plugin-react": "^5.0.4",
     "eslint": "^9.36.0",
     "eslint-plugin-react-hooks": "^5.2.0",
