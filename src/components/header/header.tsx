@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { toast } from 'react-toastify';
 import {
   Layout,
   Input,
@@ -11,6 +12,7 @@ import {
   message,
   Menu,
   Modal,
+  Button,
 } from "antd";
 import {
   BellOutlined,
@@ -19,6 +21,7 @@ import {
   LogoutOutlined,
   SettingOutlined,
   ExclamationCircleOutlined,
+  AlertOutlined
 } from "@ant-design/icons";
 import BrandLogo from "../../assets/favIcon.png";
 import { useNavigate } from "react-router-dom";
@@ -28,18 +31,59 @@ const { Text } = Typography;
 const { useBreakpoint } = Grid;
 const { confirm } = Modal;
 
+function WithActions({ closeToast, data }: any) {
+  return (
+    <div className="flex flex-col w-full">
+      <div style={{padding:'5px 0px'}}>
+        <AlertOutlined style={{color:'red'}} /> {data.title}
+      </div>
+
+      <div className="pl-5 mt-2">
+
+        <div className="flex items-center gap-2">
+          <Button type="primary"
+            onClick={closeToast}
+            className="transition-all border-none text-sm font-semibold bg-transparent border rounded-md py-2 text-indigo-600 active:scale-[.95] "
+          >
+            📍 Track in map
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const HeaderBar: React.FC = () => {
   const screens = useBreakpoint();
   const navigate = useNavigate();
 
   const [userData, setUserData] = useState<any>(null);
   const [searchValue, setSearchValue] = useState("");
+  const [notifyMsg, setNotifyMsg] = useState("");
   const [searchSuggestions, setSearchSuggestions] = useState<any[]>([]);
+
+  const notify = (msg:any) => toast(WithActions, {
+      data: {
+        title: msg,
+      },
+      closeButton: false,
+      autoClose: 5000,
+      hideProgressBar: false,
+    });
 
   useEffect(() => {
     const userDetails = JSON.parse(localStorage.getItem("userData") || "null");
     if (userDetails) setUserData(userDetails);
   }, []);
+
+  useEffect(()=>{
+    const timeout = setTimeout(()=>{
+      setNotifyMsg(notifyMsg !== "Suspisious Activities" ? 'Suspisious Activities': 'Devices Offline')
+      notify(notifyMsg !== "Suspisious Activities" ? 'Suspisious Activities': 'Devices Offline')
+    },5000)
+
+    return () => clearTimeout(timeout);
+  },[notifyMsg])
 
   const pages = [
     { label: "Dashboard", path: "/app/dashboard" },

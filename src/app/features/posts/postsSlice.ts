@@ -1,49 +1,33 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import type { PostsState, Post } from "./postsTypes";
-import { baseUrl } from "../../../utils/constants/config";
+import { createSlice } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
 
-export const fetchPosts = createAsyncThunk<Post[]>(
-  "posts/fetchPosts",
-  async () => {
-    const response = await fetch(`${baseUrl}/posts`);
-    if (!response.ok) {
-      throw new Error("Failed to fetch posts");
-    }
-    const data = await response.json();
-    return data as Post[];
-  }
-);
+interface MapSelection {
+  name: string;
+  coords: [number, number];
+}
+
+interface PostsState {
+  officers: any[];
+  selectedOfficer: MapSelection | null;
+}
 
 const initialState: PostsState = {
-  posts: [],
-  loading: false,
-  error: null,
+  officers: [],
+  selectedOfficer: null,
 };
 
 const postsSlice = createSlice({
-  name: "posts",
+  name: 'posts',
   initialState,
   reducers: {
-    clearPosts: (state) => {
-      state.posts = [];
+    setOfficers: (state, action: PayloadAction<any[]>) => {
+      state.officers = action.payload;
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchPosts.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchPosts.fulfilled, (state, action) => {
-        state.loading = false;
-        state.posts = action.payload;
-      })
-      .addCase(fetchPosts.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || "Something went wrong";
-      });
+    setSelectedOfficer: (state, action: PayloadAction<MapSelection>) => {
+      state.selectedOfficer = action.payload;
+    },
   },
 });
 
-export const { clearPosts } = postsSlice.actions;
+export const { setOfficers, setSelectedOfficer } = postsSlice.actions;
 export default postsSlice.reducer;
