@@ -1,22 +1,28 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as QRCode from "qrcode";
+import { Avatar } from "antd";
+import { UserOutlined } from "@ant-design/icons";
 import "./GatePass.css";
-
-
 
 type FormState = {
   fullName: string;
   idProof: string;
-  mobile: string;          
+  mobile: string;
   purpose: string;
   accessArea: string;
-  entry: string;           
-  validTill: string;       
+  entry: string;
+  validTill: string;
   photoDataUrl?: string | null;
 };
 
+type VisitorEntry = FormState & {
+  id: string;
+  createdAt: number;
+};
+
+const LS_KEY = "rjb_gatepass_visitors_v1";
+
 export default function GatePassApp(): JSX.Element {
-  // Start with EMPTY fields
   const [form, setForm] = useState<FormState>({
     fullName: "",
     idProof: "",
@@ -28,21 +34,45 @@ export default function GatePassApp(): JSX.Element {
     photoDataUrl: null,
   });
 
+  const [list, setList] = useState<VisitorEntry[]>([]);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
-  const [showPreview, setShowPreview] = useState<boolean>(false);
   const [showQrModal, setShowQrModal] = useState<boolean>(false);
   const [qrLoading, setQrLoading] = useState<boolean>(false);
-  const cardRef = useRef<HTMLDivElement | null>(null);
+  const [qrTitle, setQrTitle] = useState<string>("");
 
-  // --- helpers ---
-  function escapeHtml(str: string) {
-    return String(str)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#39;");
-  }
+  // Track which pass is open (for PDF layout)
+  const [currentEntry, setCurrentEntry] = useState<VisitorEntry | null>(null);
+  const [currentPassType, setCurrentPassType] =
+    useState<"Gate Pass" | "Visitor Pass">("Gate Pass");
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const modalRef = useRef<HTMLDivElement | null>(null);
+
+  // Lock body scroll + ESC close
+  useEffect(() => {
+    if (!showQrModal) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setShowQrModal(false);
+    window.addEventListener("keydown", onKey);
+    modalRef.current?.focus();
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [showQrModal]);
+
+  const isFormValid = Boolean(
+    form.fullName.trim() &&
+      form.idProof.trim() &&
+      form.mobile.trim() &&
+      form.purpose &&
+      form.accessArea &&
+      form.entry &&
+      form.validTill &&
+      new Date(form.validTill) > new Date(form.entry)
+  );
 
   function prettyDateTime(iso: string) {
     if (!iso) return "";
@@ -58,32 +88,29 @@ export default function GatePassApp(): JSX.Element {
     return `${dd}-${mm}-${yyyy} ${String(h).padStart(2, "0")}:${m} ${am}`;
   }
 
-  const isFormValid: boolean = Boolean(
-    form.fullName.trim() &&
-      form.idProof.trim() &&
-      form.mobile.trim() &&
-      form.purpose &&
-      form.accessArea &&
-      form.entry &&
-      form.validTill &&
-      new Date(form.validTill) > new Date(form.entry)
-  );
+  function escapeHtml(str: string) {
+    return String(str)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  }
 
-  // --- QR HTML (links to public/qr-card.css) ---
-  function buildDataHtml(data: FormState): string {
+  function buildDataHtml(
+    data: VisitorEntry,
+    passType: "Gate Pass" | "Visitor Pass"
+  ): string {
     const photoHtml = data.photoDataUrl
       ? `<div class="photo-wrapper"><img class="photo" src="${data.photoDataUrl}" alt="photo"></div>`
       : "";
 
     const html = `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Gate Pass - ${escapeHtml(data.fullName)}</title>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${escapeHtml(passType)} - ${escapeHtml(data.fullName)}</title>
 <link rel="stylesheet" href="qr-card.css">
-</head>
-<body>
+</head><body>
   <div class="card">
     ${photoHtml}
     <h2 class="title">${escapeHtml(data.fullName)}</h2>
@@ -93,20 +120,72 @@ export default function GatePassApp(): JSX.Element {
     <div class="row"><div class="label">Access</div><div>${escapeHtml(data.accessArea)}</div></div>
     <div class="row"><div class="label">Entry</div><div>${escapeHtml(prettyDateTime(data.entry))}</div></div>
     <div class="row"><div class="label">Valid Till</div><div>${escapeHtml(prettyDateTime(data.validTill))}</div></div>
+    <div class="row"><div class="label">Pass Type</div><div>${escapeHtml(passType)}</div></div>
     <div class="verified">Verified by AI</div>
   </div>
-</body>
-</html>`;
-
+</body></html>`;
     return `data:text/html;base64,${btoa(unescape(encodeURIComponent(html)))}`;
   }
 
-  // --- actions ---
-  async function generateQRCode(): Promise<void> {
-    if (!isFormValid) return;
-    setQrLoading(true);
+  // storage
+  useEffect(() => {
     try {
-      const dataHtml = buildDataHtml(form);
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) setList(JSON.parse(raw));
+    } catch {}
+  }, []);
+  useEffect(() => {
+    localStorage.setItem(LS_KEY, JSON.stringify(list));
+  }, [list]);
+
+  // form handlers
+  function onChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+    const { name, value } = e.target;
+    setForm((p) => ({ ...p, [name]: value }));
+  }
+  function onPhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () =>
+      setForm((p) => ({ ...p, photoDataUrl: reader.result as string }));
+    reader.readAsDataURL(file);
+  }
+
+  function handleSave() {
+    if (!isFormValid) return;
+    const entry: VisitorEntry = {
+      ...form,
+      id: crypto.randomUUID(),
+      createdAt: Date.now(),
+    };
+    setList((prev) => [entry, ...prev]);
+    requestAnimationFrame(() =>
+      listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+    );
+    setForm({
+      fullName: "",
+      idProof: "",
+      mobile: "",
+      purpose: "",
+      accessArea: "",
+      entry: "",
+      validTill: "",
+      photoDataUrl: null,
+    });
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  async function openQrFor(
+    entry: VisitorEntry,
+    passType: "Gate Pass" | "Visitor Pass"
+  ) {
+    setQrLoading(true);
+    setQrTitle(`${passType} • ${entry.fullName}`);
+    setCurrentEntry(entry);
+    setCurrentPassType(passType);
+    try {
+      const dataHtml = buildDataHtml(entry, passType);
       const url = await QRCode.toDataURL(dataHtml, {
         errorCorrectionLevel: "L",
         type: "image/png",
@@ -123,48 +202,104 @@ export default function GatePassApp(): JSX.Element {
     }
   }
 
+  /* VERSION 1 (stacked): A5 portrait, QR centered on top, details below */
   async function downloadPdf(): Promise<void> {
-    const html2canvas = (await import("html2canvas")).default;
-    const jsPDF = (await import("jspdf")).default;
-    const el = cardRef.current;
-    if (!el) return;
-    const canvas = await html2canvas(el, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF({ unit: "px", format: [canvas.width, canvas.height] });
-    pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
-    pdf.save(`${(form.fullName || "gatepass").replace(/\s+/g, "_")}.pdf`);
-  }
+    if (!qrDataUrl || !currentEntry) {
+      alert("Generate a pass first.");
+      return;
+    }
+    const { jsPDF } = await import("jspdf");
 
-  function onChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
-    const { name, value } = e.target;
-    setForm((p) => ({ ...p, [name]: value }));
-  }
+    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a5" });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const margin = 12;
+    const innerW = pageW - margin * 2;
 
-  function onPhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setForm((p) => ({ ...p, photoDataUrl: reader.result as string }));
-    reader.readAsDataURL(file);
-  }
+    // Card background
+    pdf.setDrawColor(230);
+    pdf.setFillColor(255, 255, 255);
+    pdf.roundedRect(margin, margin, innerW, pageH - margin * 2, 3, 3, "FD");
 
-  function createHtmlFileAndShare(): void {
-    const html = decodeURIComponent(escape(atob(buildDataHtml(form).split(",")[1])));
-    const blob = new Blob([html], { type: "text/html" });
-    const url = URL.createObjectURL(blob);
-    window.open(url, "_blank");
-    navigator.clipboard?.writeText(url).catch(() => {});
-    alert("Gate pass HTML opened in a new tab and link copied to clipboard (blob URL, only works on this device).");
+    // Header
+    let y = margin + 10;
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(16);
+    pdf.text(`${currentPassType}`, margin + 8, y);
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(10);
+    pdf.setTextColor(120);
+    pdf.text("RJB Security Command • Verified by AI", pageW - margin - 8, y, { align: "right" });
+    pdf.setTextColor(0);
+
+    // QR centered
+    const qrSize = 60; // mm (adjust if you want)
+    y += 10;
+    const qrX = (pageW - qrSize) / 2;
+    pdf.addImage(qrDataUrl, "PNG", qrX, y, qrSize, qrSize);
+
+    // Optional photo chip under QR (centered)
+    const afterQrY = y + qrSize + 6;
+    if (currentEntry.photoDataUrl) {
+      const photoSize = 16;
+      const photoX = (pageW - photoSize) / 2;
+      pdf.addImage(currentEntry.photoDataUrl, "JPEG", photoX, afterQrY, photoSize, photoSize, undefined, "FAST");
+    }
+
+    // Details block (centered under QR/photo)
+    let detailsY = afterQrY + (currentEntry.photoDataUrl ? 16 : 0) + 10;
+    const labelW = 26; // width reserved for labels
+    const valueStartX = (pageW - 100) / 2 + labelW; // keep about 100mm wide area centered
+    const labelStartX = valueStartX - labelW;
+
+    const line = (label: string, value: string) => {
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(12);
+      pdf.text(label, labelStartX, detailsY);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(12);
+      pdf.text(value || "-", valueStartX, detailsY);
+      detailsY += 8;
+    };
+
+    line("Name", currentEntry.fullName);
+    line("ID Proof", currentEntry.idProof);
+    line("Mobile", currentEntry.mobile);
+    line("Purpose", currentEntry.purpose);
+    line("Access", currentEntry.accessArea);
+    line("Entry", prettyDateTime(currentEntry.entry));
+    line("Valid Till", prettyDateTime(currentEntry.validTill));
+
+    // Footer timestamp
+    pdf.setFontSize(9);
+    pdf.setTextColor(120);
+    pdf.text(
+      `Generated: ${prettyDateTime(new Date().toISOString())}`,
+      margin + 8,
+      pageH - margin - 6
+    );
+
+    pdf.save(
+      `${currentEntry.fullName.replace(/\s+/g, "_")}_${currentPassType.replace(" ", "")}.pdf`
+    );
   }
 
   return (
     <div className="gp-app">
       <div className="gp-container">
+        {/* LEFT: FORM */}
         <div className="gp-form-card">
           <h3 className="gp-heading">Gate Pass Details</h3>
 
           <label className="gp-label">Upload Photo (optional)</label>
-          <input type="file" accept="image/*" onChange={onPhotoChange} className="gp-input" />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={onPhotoChange}
+            className="gp-input"
+          />
 
           <label className="gp-label">Full Name</label>
           <input
@@ -208,7 +343,6 @@ export default function GatePassApp(): JSX.Element {
                 <option>Visitor</option>
               </select>
             </div>
-
             <div className="gp-col">
               <label className="gp-label">Access Area</label>
               <select
@@ -236,7 +370,6 @@ export default function GatePassApp(): JSX.Element {
                 onChange={onChange}
               />
             </div>
-
             <div className="gp-col">
               <label className="gp-label">Valid Till</label>
               <input
@@ -252,119 +385,111 @@ export default function GatePassApp(): JSX.Element {
 
           <div className="gp-button-row">
             <button
+              type="button"
               className="gp-button gp-btn-primary"
-              onClick={() => setShowPreview(true)}
+              onClick={handleSave}
               disabled={!isFormValid}
-              title={!isFormValid ? "Fill all fields to preview" : ""}
+              title={!isFormValid ? "Fill all fields to save" : ""}
             >
-              Preview Gate Pass
-            </button>
-
-            <button
-              className="gp-button gp-btn-green"
-              onClick={generateQRCode}
-              disabled={qrLoading || !isFormValid}
-              title={!isFormValid ? "Fill all fields to generate QR" : ""}
-            >
-              {qrLoading ? "Generating..." : "Generate QR"}
+              Save
             </button>
           </div>
 
-          <div className="gp-hint">All fields are required. Use the calendar to pick date &amp; time.</div>
+          <div className="gp-hint">
+            Saved entries appear on the right. Click a pass button to generate a QR.
+          </div>
         </div>
 
-        {showPreview && (
-          <div className="gp-preview-wrapper">
-            <div ref={cardRef} className="gp-card">
-              <div className="gp-avatar">
-                {form.photoDataUrl ? (
-                  <img className="gp-avatar-img" src={form.photoDataUrl} alt="avatar" />
-                ) : (
-                  <div className="gp-avatar-fallback" />
-                )}
-              </div>
-
-              <h3 className="gp-name">{form.fullName || "—"}</h3>
-              <div className="gp-id">{form.idProof || "—"}</div>
-
-              <div className="gp-qr-box">
-                {qrDataUrl ? (
-                  <img
-                    className="gp-qr-img"
-                    src={qrDataUrl}
-                    alt="qr"
-                    onClick={() => setShowQrModal(true)}
-                  />
-                ) : (
-                  <div className="gp-qr-placeholder">
-                    QR will appear after you click "Generate QR".
-                  </div>
-                )}
-              </div>
-
-              {/* subtle divider below QR */}
-              <div className="gp-divider" />
-
-              <div className="gp-verified-section">
-                <div className="gp-verified">Verified by AI</div>
-                <div className="gp-entry">
-                  Gate Entry: {form.entry ? prettyDateTime(form.entry) : "—"}
-                </div>
-                <div className="gp-valid">
-                  Valid Till: {form.validTill ? prettyDateTime(form.validTill) : "—"}
-                </div>
-
-                <div className="gp-action-row center">
-                  <button className="gp-btn" onClick={downloadPdf} disabled={!qrDataUrl}>
-                    Print / Download PDF
-                  </button>
-                  <button className="gp-btn" onClick={createHtmlFileAndShare}>
-                    Open/Share HTML
-                  </button>
-                </div>
-              </div>
-            </div>
+        {/* RIGHT: TABLE */}
+        <div ref={listRef} className="gp-list-card">
+          <div className="gp-table-head gp-sticky-head">
+            <div>Visitor</div>
+            <div>Full Name</div>
+            <div>Purpose</div>
           </div>
-        )}
+
+          {list.length === 0 ? (
+            <div className="gp-empty">No entries yet.</div>
+          ) : (
+            <div className="gp-table-body">
+              {list.map((v) => (
+                <div key={v.id} className="gp-row">
+                  {/* Avatar */}
+                  <div className="c1">
+                    <div className="gp-avatar-wrap">
+                      <Avatar
+                        size={44}
+                        src={v.photoDataUrl || undefined}
+                        icon={!v.photoDataUrl ? <UserOutlined /> : undefined}
+                        style={{ backgroundColor: v.photoDataUrl ? "#ffffff" : "#bfbfbf" }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Name & Purpose */}
+                  <div className="c2">{v.fullName}</div>
+                  <div className="c3">{v.purpose}</div>
+
+                  {/* Actions under name→purpose */}
+                  <div className="c4">
+                    <button
+                      type="button"
+                      className="gp-chip"
+                      onClick={() => openQrFor(v, "Gate Pass")}
+                      disabled={qrLoading}
+                    >
+                      Gate Pass
+                    </button>
+                    <button
+                      type="button"
+                      className="gp-chip"
+                      onClick={() => openQrFor(v, "Visitor Pass")}
+                      disabled={qrLoading}
+                    >
+                      Visitor Pass
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
+      {/* QR MODAL */}
       {showQrModal && (
         <div className="gp-modal-backdrop" onClick={() => setShowQrModal(false)}>
-          <div className="gp-modal" onClick={(e) => e.stopPropagation()}>
-            <h4 className="gp-modal-title">{form.fullName || "Gate Pass"}</h4>
-
+          <div
+            ref={modalRef}
+            className="gp-modal"
+            onClick={(e) => e.stopPropagation()}
+            tabIndex={-1}
+            role="dialog"
+            aria-modal="true"
+            aria-label="QR code modal"
+          >
+            <h4 className="gp-modal-title">{qrTitle || "Gate Pass"}</h4>
             <div className="gp-modal-center">
               {qrDataUrl ? (
-                <img className="gp-qr-large" src={qrDataUrl} alt="qr" />
+                <img className="gp-qr-large" src={qrDataUrl} alt="QR code" />
               ) : (
                 <div className="gp-qr-loading">Generating QR...</div>
               )}
             </div>
-
             <div className="gp-modal-actions">
-              <button className="gp-button" onClick={downloadPdf} disabled={!qrDataUrl}>
+              <button
+                type="button"
+                className="gp-button"
+                onClick={downloadPdf}
+                disabled={!qrDataUrl}
+              >
                 Download PDF
               </button>
-
               <button
+                type="button"
                 className="gp-button"
-                onClick={() => {
-                  const dataHtml = buildDataHtml(form);
-                  navigator.clipboard?.writeText(dataHtml).then(() =>
-                    alert("Data URL copied to clipboard. Many QR scanner apps will open it directly.")
-                  );
-                }}
+                onClick={() => setShowQrModal(false)}
               >
-                Copy data URL
-              </button>
-            </div>
-
-            <div className="gp-tip">
-              Tip: QR encodes a small HTML page (data URL). If a scanner only shows text, paste the copied data URL into a browser.
-            </div>
-
-            <div className="gp-close-row">
-              <button className="gp-button" onClick={() => setShowQrModal(false)}>
                 Close
               </button>
             </div>
