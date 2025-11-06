@@ -6,12 +6,12 @@ import {
   HeatMapOutlined,
   AppstoreAddOutlined,
   GatewayOutlined,
-  SettingOutlined,
+  // SettingOutlined,
   PicCenterOutlined,
   ExclamationCircleOutlined,
   PieChartOutlined,
   MenuUnfoldOutlined,
-  RobotOutlined
+  // RobotOutlined
 } from '@ant-design/icons';
 import { Layout, Menu, theme, Modal, message } from 'antd';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';

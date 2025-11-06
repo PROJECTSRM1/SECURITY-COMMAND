@@ -1,4 +1,4 @@
-import { Cell, Pie, PieChart, type PieLabelRenderProps } from 'recharts';
+import { Cell, Pie, PieChart } from 'recharts';
 
 // #region Sample data
 const data = [
