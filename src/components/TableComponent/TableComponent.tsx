@@ -1,90 +1,72 @@
 import React from 'react';
-import { Space, Table, Tag } from 'antd';
+import { Table, Tag } from 'antd';
 import type { TableProps } from 'antd';
+import { markersData } from '../../utils/constants/data';
+import { useAppDispatch } from '../../app/hooks';
+import { setSelectedOfficer } from '../../app/features/posts/postsSlice';
 
 interface DataType {
   key: string;
   name: string;
-  age: number;
-  address: string;
-  tags: string[];
+  // age: number;
+  position: string;
+  availability: string[];
 }
 
-const columns: TableProps<DataType>['columns'] = [
-  {
-    title: 'Officers',
-    dataIndex: 'name',
-    key: 'name',
-    render: (text) => <a>{text}</a>,
-  },
-  {
-    title: 'Time',
-    dataIndex: 'age',
-    key: 'age',
-  },
-  {
-    title: 'Zone',
-    dataIndex: 'address',
-    key: 'address',
-  },
-  {
-    title: 'Tags',
-    key: 'tags',
-    dataIndex: 'tags',
-    render: (_, { tags }) => (
-      <>
-        {tags.map((tag) => {
-          let color = tag.length > 5 ? 'geekblue' : 'green';
-          if (tag === 'test') {
-            color = 'volcano';
-          }
-          return (
-            <Tag color={color} key={tag}>
-              {tag.toUpperCase()}
+const TableComponent: React.FC = () => {
+  const dispatch = useAppDispatch();
+
+  const columns: TableProps<DataType>['columns'] = [
+    {
+      title: 'Officers',
+      dataIndex: 'name',
+      key: 'name',
+      render: (text) => <span>{text}</span>,
+    },
+    {
+      title: 'Position 📍',
+      dataIndex: 'position',
+      key: 'position',
+      render: (_, text: any) => <a href='#'
+        onClick={(e) => {
+          e.preventDefault();
+          dispatch(setSelectedOfficer({ name: text.name, coords: text.position }));
+        }}
+      >{text.position[0] + ' , ' + text.position[1]}</a>,
+    },
+    {
+      title: 'Availability',
+      key: 'availability',
+      dataIndex: 'availability',
+      render: (availability) => {
+        let color;
+        let txt;
+        if (availability) {
+          color = 'volcano';
+          txt = 'On-Post'
+        } else {
+          color = 'geekblue'
+          txt = 'Offline'
+        }
+        return (
+          <>
+            <Tag color={color}>
+              {txt}
             </Tag>
-          );
-        })}
-      </>
-    ),
-  },
-  {
-    title: 'Action',
-    key: 'action',
-    render: (_, record) => (
-      <Space size="middle">
-        <a>Invite {record.name}</a>
-        <a>Delete</a>
-      </Space>
-    ),
-  },
-];
+          </>
+        )
+      },
+    },
+  ];
 
-const data: DataType[] = [
-  {
-    key: '1',
-    name: 'John Brown',
-    age: 32,
-    address: 'New York No. 1 Lake Park',
-    tags: ['nice', 'developer'],
-  },
-  {
-    key: '2',
-    name: 'Jim Green',
-    age: 42,
-    address: 'London No. 1 Lake Park',
-    tags: ['test'],
-  },
-  {
-    key: '3',
-    name: 'Joe Black',
-    age: 32,
-    address: 'Sydney No. 1 Lake Park',
-    tags: ['cool', 'teacher'],
-  },
-];
-
-const TableComponent: React.FC = () => <Table<DataType>  columns={columns}
-            className='rjb-header-cards'
-dataSource={data} />;
-
+  return <Table<DataType> columns={columns}
+    className='rjb-header-cards'
+    dataSource={markersData}
+    pagination={{
+      pageSize: 4,
+      showSizeChanger: false,
+      position: ['bottomCenter'],
+    }}
+  />;
+}
 export default TableComponent;

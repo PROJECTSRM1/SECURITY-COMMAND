@@ -1,43 +1,79 @@
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { useEffect, useRef } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, 
+  // useMap 
+} from 'react-leaflet';
 import "leaflet/dist/leaflet.css";
-// import L from "leaflet";
+import { markersData } from '../../utils/constants/data';
+import { useAppSelector } from '../../app/hooks';
 
-// Optional: Fix default icon issue (if marker icons don't show)
-// delete L.Icon.Default.prototype._getIconUrl;
-// L.Icon.Default.mergeOptions({
-//   iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
-//   iconUrl: require("leaflet/dist/images/marker-icon.png"),
-//   shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
-// });
+// const MapUpdater = ({ selectedOfficer }: { selectedOfficer: any }) => {
+//   const map = useMap();
+
+//   useEffect(() => {
+//     if (selectedOfficer) {
+//       const { coords } = selectedOfficer;
+//       map.flyTo(coords, 20, { animate: true }); // smooth zoom-in
+//     }
+//   }, [selectedOfficer, map]);
+
+//   return null; // nothing to render
+// };
 
 export default function MapView() {
-    const position: [number, number] = [17.385, 78.4867];
+  const markerRefs = useRef<Record<string, L.Marker>>({});
+  const selectedOfficer = useAppSelector((state) => state.posts.selectedOfficer);
+
+   useEffect(() => {
+    if (selectedOfficer) {
+      const marker = markerRefs.current[selectedOfficer.name];
+      if (marker) {
+        marker.openPopup();
+      }
+    }
+  }, [selectedOfficer]);
+
+  const position: [number, number] = [17.385, 78.4867];
+
+
+    useEffect(()=>{
+      console.log('selectedOfficer:', selectedOfficer)
+    },[selectedOfficer])
+
 
 //   const position = [17.385, 78.4867]; // Hyderabad coordinates
 
-const markers: any = [
-  { id: 1, name: "Main Gate", position: [17.385, 78.4867] },
-  { id: 2, name: "Parking Area", position: [17.39, 78.48] },
-  { id: 3, name: "CCTV Zone 3", position: [17.382, 78.49] },
-];
-
   return (
-    <div style={{ height: "100%", width: "100%" }}>
-      <MapContainer
-        center={position}
-        zoom={13}
-        style={{ height: "100%", width: "100%" }}
-      >
-        <TileLayer
-          attribution='&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        {markers.map((m:any) => (
-            <Marker key={m.id} position={m.position}>
-                <Popup>📍 {m.name}</Popup>
-            </Marker>
-            ))}
-      </MapContainer>
+    <div style={{ height: "500px", width: "100%" }}>
+ <MapContainer
+      center={selectedOfficer ? selectedOfficer.coords : position}
+      zoom={selectedOfficer ? 18 : 13}
+      style={{ height: '100%', width: '100%' }}
+    >
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+
+      {/* This invisible helper re-centers map on selection */}
+      {/* <MapUpdater selectedOfficer={selectedOfficer} /> */}
+
+      {markersData.map((m: any) => (
+        <Marker
+          key={m.id}
+          position={m.position}
+          ref={(ref) => {
+            if (ref) markerRefs.current[m.name] = ref;
+          }}
+        >
+          <Popup>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <div>Officer: {m.name}</div>
+              <div>Availability: {m.availability ? 'On-Post' : 'Offline'}</div>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+    </MapContainer>
     </div>
   );
 }

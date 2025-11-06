@@ -6,12 +6,12 @@ import {
   HeatMapOutlined,
   AppstoreAddOutlined,
   GatewayOutlined,
-  SettingOutlined,
+  // SettingOutlined,
   PicCenterOutlined,
   ExclamationCircleOutlined,
   PieChartOutlined,
   MenuUnfoldOutlined,
-  RobotOutlined
+  // RobotOutlined
 } from '@ant-design/icons';
 import { Layout, Menu, theme, Modal, message } from 'antd';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
@@ -34,6 +34,7 @@ const MenuItems = [
       key: 'Officer Tracking',
       menuIcon: AppstoreAddOutlined,
       label: 'Officer Tracking',
+      path: '/app/officers-track'
     },
     {
       key: 'Gate Pass & Visitors',
@@ -57,16 +58,16 @@ const MenuItems = [
       label: 'AI Alerts',
       menuIcon: NotificationOutlined,
     },
-    {
-      key: 'System Health',
-      label: 'System Health',
-      menuIcon: RobotOutlined,
-    },
-    {
-      key: 'Admin',
-      label: 'Admin',
-      menuIcon: SettingOutlined,
-    },
+    // {
+    //   key: 'System Health',
+    //   label: 'System Health',
+    //   menuIcon: RobotOutlined,
+    // },
+    // {
+    //   key: 'Admin',
+    //   label: 'Admin',
+    //   menuIcon: SettingOutlined,
+    // },
   { menuIcon: LogoutOutlined, label: 'Logout' },
 ];
 
@@ -160,8 +161,8 @@ const LayoutComponent: React.FC = () => {
             inlineCollapsed={collapsed}
           />
         </Sider>
-        <Layout style={{ padding: '0 24px 24px', display: 'flex', flexDirection: 'column' }}>
-          <Content style={{ padding: 24, margin: 0, borderRadius: borderRadiusLG, flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <Layout style={{  display: 'flex', flexDirection: 'column' }}>
+          <Content style={{ margin: 0, borderRadius: borderRadiusLG, flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             <Outlet />
           </Content>
         </Layout>
