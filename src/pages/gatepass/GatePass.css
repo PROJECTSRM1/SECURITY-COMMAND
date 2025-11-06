@@ -1,157 +1,210 @@
-/* GatePass.css - warm orange + cream cards */
 
-/* Root variables */
-:root {
-  --primary-bg: linear-gradient(180deg, #f7a64b 0%, #f09b44 50%, #f7a36a 100%);
-  --card-bg: #fff6f0;
-  --accent: #00b26a;
-  --accent-light: rgba(0, 178, 106, 0.12);
-  --text: #1b1b1b;
-  --muted: #6c6c6c;
-  --success: #00b26a;
-  --shadow: 0 6px 18px rgba(0,0,0,0.08);
-  --shadow-hover: 0 12px 30px rgba(0,0,0,0.12);
-  --font-main: "Inter", system-ui, sans-serif;
+
+:root{
+  --card-bg:#fff6f0;
+  --accent:#00b26a;
+  --accent-light:rgba(0,178,106,.12);
+  --text:#1b1b1b;
+  --muted:#6c6c6c;
+  --success:#00b26a;
+  --shadow:0 6px 18px rgba(0,0,0,.08);
+  --shadow-hover:0 12px 30px rgba(0,0,0,.12);
+  --font-main:"Inter",system-ui,sans-serif;
 }
 
-/* Base app layout */
-.gp-app {
-  background: var(--primary-bg);
-  color: var(--text);
-  min-height: 100vh;
-  padding: 28px 16px;
-  font-family: var(--font-main);
-  display: flex;
+.gp-app{
+  background:var(--primary-bg);
+  color:var(--text);
+  min-height:100vh;
+  padding:28px 16px;
+  font-family:var(--font-main);
+  display:flex;justify-content:center;align-items:flex-start;
+}
+
+/* Left form + right table */
+.gp-container{
+  display:grid;
+  grid-template-columns:560px 1fr;
+  gap:28px;
+  width:100%;
+  max-width:1360px;
+  box-sizing:border-box;
+}
+
+/* Form card */
+.gp-form-card{
+  background:var(--card-bg);
+  border-radius:12px;
+  padding:22px;
+  box-shadow:var(--shadow);
+  transition:box-shadow .25s, transform .25s;
+  width:100%;
+}
+.gp-form-card:hover{ box-shadow:var(--shadow-hover); transform:translateY(-2px); }
+
+.gp-heading{ font-size:20px; font-weight:700; margin-bottom:14px; color:#17202a; }
+.gp-label{ display:block; font-size:13px; margin-top:10px; color:var(--muted); }
+
+.gp-input,.gp-select{
+  width:100%; margin-top:8px; padding:10px 12px; background:#fff; color:var(--text);
+  border:1px solid #e8e3df; border-radius:8px; outline:none;
+  transition:border-color .2s, box-shadow .2s; box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
+}
+.gp-input:focus,.gp-select:focus{ border-color:rgba(0,0,0,.08); box-shadow:0 6px 12px rgba(16,24,40,.03); }
+
+.gp-form-row{ display:flex; gap:12px; margin-top:10px; }
+.gp-col{ flex:1; }
+
+.gp-button-row{ display:flex; gap:12px; margin-top:18px; }
+.gp-button{
+  flex:1; padding:10px 14px; font-weight:700; font-size:14px; border:none; border-radius:8px;
+  cursor:pointer; transition:transform .12s, box-shadow .12s; box-shadow:0 4px 10px rgba(0,0,0,.05);
+}
+.gp-btn-primary{ background:#1e73ff; color:#fff; }
+.gp-btn-primary:hover{ transform:translateY(-2px); box-shadow:0 10px 20px rgba(30,115,255,.18); }
+
+.gp-hint{ margin-top:12px; font-size:13px; color:var(--muted); }
+
+/* ---------- Right panel: Visitor table ---------- */
+.gp-list-card{
+  background:var(--card-bg);
+  border-radius:12px;
+  box-shadow:var(--shadow);
+  padding:10px 14px;
+  display:flex; flex-direction:column;
+  box-sizing:border-box; overflow:hidden; max-width:100%;
+}
+
+/* Header = 3 columns (no Actions) */
+.gp-table-head{
+  display:grid;
+  grid-template-columns:60px 1.8fr 1.2fr;
+  align-items:center;
+  gap:18px;
+  padding:10px 8px;
+  font-weight:700;
+  background:#f8fafc;
+  border-bottom:1px solid #eaeaea;
+  color:#1b1b1b;
+}
+.gp-table-head > div{ text-align:left; padding:0 6px; white-space:nowrap; }
+
+/* Body container */
+.gp-table-body{ display:flex; flex-direction:column; }
+
+
+.gp-row{
+  display:grid;
+  grid-template-columns:60px 1.8fr 1.2fr;
+  grid-template-areas:
+    "avatar name purpose"
+    "actions actions actions";
+  align-items:center;
+  gap:16px;
+  padding:12px 8px 14px;
+  border-bottom:1px solid #f1f1f1;
+  background:#fff6f0;
+  box-sizing:border-box;
+}
+.gp-row:nth-child(even){ background:#fff9f4; }
+.gp-row:last-child{ border-bottom:none; }
+
+.gp-empty{ padding:18px; color:var(--muted); }
+
+/* Avatar */
+.gp-tab-avatar{
+  width:44px; height:44px; border-radius:50%;
+  overflow:hidden; border:1px solid #e5e7eb; background:#fff;
+  display:grid; place-items:center;
+}
+.gp-tab-avatar img{ width:100%; height:100%; object-fit:cover; }
+.gp-tab-avatar-fallback{ width:70%; height:70%; border-radius:50%; background:#e0dfdc; }
+
+/* Cells */
+.c1{ grid-area:avatar; justify-self:start; }
+.c2{ grid-area:name;    min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.c3{ grid-area:purpose; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* Actions row under the whole row; align left so it starts under avatar */
+.c4 {
+ display: flex;
   justify-content: center;
-  align-items: flex-start;
-}
-
-/* Container grid */
-.gp-container {
-  display: grid;
-  grid-template-columns: 1.2fr 0.9fr;
-  gap: 20px;
-  width: 100%;
-  max-width: 1100px;
+  gap: 16px;
+  margin: 12px auto 20px;
+  max-width: 420px;   /* keeps them as a tidy pair */
+  padding: 0 12px;    /* small breathing room on narrow screens */
   box-sizing: border-box;
 }
-
-/* Form Card */
-.gp-form-card {
-  background: var(--card-bg);
-  border-radius: 12px;
-  padding: 22px;
-  box-shadow: var(--shadow);
-  transition: box-shadow 0.25s ease, transform 0.25s ease;
-}
-.gp-form-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
-
-.gp-heading { font-size: 20px; font-weight: 700; margin-bottom: 14px; color: #17202a; }
-.gp-label { display: block; font-size: 13px; margin-top: 10px; color: var(--muted); }
-
-.gp-input, .gp-select {
-  width: 100%; margin-top: 8px; padding: 10px 12px; background: #fff; color: var(--text);
-  border: 1px solid #e8e3df; border-radius: 8px; outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
-}
-.gp-input:focus, .gp-select:focus { border-color: rgba(0,0,0,0.08); box-shadow: 0 6px 12px rgba(16,24,40,0.03); }
-
-.gp-form-row { display: flex; gap: 12px; margin-top: 10px; }
-.gp-col { flex: 1; }
+.c4 .gp-chip { flex: 0 0 140px; }
 
 /* Buttons */
-.gp-button-row { display: flex; gap: 12px; margin-top: 18px; }
-.gp-button {
-  flex: 1; padding: 10px 14px; font-weight: 700; font-size: 14px; border: none; border-radius: 8px;
-  cursor: pointer; transition: transform 0.12s ease, box-shadow 0.12s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+.gp-chip{
+    padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  text-align: center;
+  flex: 0 0 160px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, box-shadow 0.1s;
+  
 }
-.gp-btn-primary { background: #1e73ff; color: #fff; }
-.gp-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(30,115,255,0.18); }
-.gp-btn-green { background: transparent; color: #1e73ff; border: 1px solid rgba(30,115,255,0.12); }
-.gp-btn-green:hover { background: #1e73ff; color: #fff; }
+.gp-chip:hover{ background:#1e73ff; color:#fff; box-shadow:0 4px 10px rgba(30,115,255,.18); }
 
-.gp-hint { margin-top: 12px; font-size: 13px; color: var(--muted); }
+/* Sticky head */
+.gp-sticky-head{ position:sticky; top:0; z-index:1; }
 
-/* Preview Card */
-.gp-preview-wrapper {
-  background: var(--card-bg); border-radius: 12px; padding: 24px; text-align: center;
-  box-shadow: var(--shadow); display: flex; flex-direction: column; align-items: center;
+/* ---------- QR modal ---------- */
+.gp-modal-backdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,.55);
+  display:flex; align-items:center; justify-content:center; z-index:1000;
 }
-
-/* Avatar centered */
-.gp-avatar {
-  width: 100px; height: 100px; border-radius: 50%; overflow: hidden; margin: 0 auto 18px;
-  border: 6px solid rgba(255, 255, 255, 0.7); background: #fff; display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+.gp-modal{
+  background:#fff; padding:18px; border-radius:12px; width:min(92vw,440px);
+  box-shadow:0 24px 60px rgba(16,24,40,.25); outline:none;
 }
-.gp-avatar-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.gp-avatar-fallback { width: 70%; height: 70%; border-radius: 50%; background: #e0dfdc; }
+.gp-modal-title{ margin:0 0 12px; font-weight:700; color:#17202a; text-align:center; }
+.gp-modal-center{ text-align:center; margin:8px 0 12px; }
+.gp-qr-large{ width:280px; height:280px; display:inline-block; border-radius:10px; border:1px solid #eee; object-fit:contain; }
+.gp-modal-actions{ display:flex; gap:10px; justify-content:center; }
 
-.gp-name { font-size: 20px; font-weight: 700; color: #0f1724; margin: 8px 0 4px; }
-.gp-id { font-size: 13px; color: var(--muted); margin-bottom: 22px; }
 
-/* QR section */
-.gp-qr-box {
-  width: 180px; height: 180px; margin: 0 auto 20px; display: grid; place-items: center;
-  background: #ffffff; border-radius: 12px; border: 1px solid #f0e6e2; box-shadow: 0 8px 16px rgba(0,0,0,0.04);
-}
-.gp-qr-img { width: 160px; height: 160px; cursor: pointer; transition: transform 0.25s ease; }
-.gp-qr-img:hover { transform: scale(1.04); }
-.gp-qr-placeholder { color: #9aa0a6; }
-
-/* Subtle divider below QR */
-.gp-divider {
-  width: 82%;
-  height: 1px;
-  background: rgba(0, 0, 0, 0.08);
-  margin: 18px auto 20px;
-  border-radius: 1px;
+/* Use Ant Design Avatar but give it a clean ring like the sample */
+.gp-avatar-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Verified & times */
-.gp-verified-section {
-  display: flex; flex-direction: column; align-items: center; text-align: center;
-  margin-top: 10px; gap: 8px;
+/* white inner ring + subtle outer border to match your UI */
+.gp-avatar-wrap .ant-avatar {
+  box-shadow: 0 0 0 3px #ffffff, 0 0 0 4px #e5e7eb;
+  /* keeps it perfectly round even if size changes */
+  border-radius: 50%;
 }
-.gp-verified {
-  color: var(--success); font-weight: 600; font-size: 16px;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-.gp-verified::before {
-  content: '✔'; display: inline-flex; align-items: center; justify-content: center;
-  width: 22px; height: 22px; background: var(--success); color: #fff; border-radius: 50%; font-size: 13px;
-}
-.gp-entry, .gp-valid {
-  margin-top: 6px; font-size: 14px; color: #333; font-weight: 500; line-height: 1.5;
-}
-.gp-valid { color: #555; }
 
-/* Buttons under preview */
-.gp-action-row { display: flex; gap: 10px; margin-top: 14px; width: 100%; }
-.gp-action-row.center { justify-content: center; gap: 14px; margin-top: 20px; padding-bottom: 10px; }
-.gp-action-row .gp-btn {
-  flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #e9e0db; background: #fff; color: #333; font-weight: 700;
+/* ---------- Responsive ---------- */
+@media (max-width:900px){
+  .gp-container{ grid-template-columns:1fr; gap:16px; }
+  .gp-form-card{ padding:16px; }
+
+  .gp-table-head{ grid-template-columns:52px 1.4fr 1fr; gap:12px; }
+
+  .gp-row{
+    grid-template-columns:52px 1.4fr 1fr;
+    grid-template-areas:
+      "avatar name purpose"
+      "actions actions actions";
+    gap:12px;
+  }
+
+  /* On mobile, auto-wrap & center the buttons */
+  .c4{ justify-content:center; flex-wrap:wrap; gap:8px; }
+  .gp-chip{ flex:1 1 48%; min-width:130px; padding:7px 9px; font-size:12px; }
 }
-.gp-action-row.center .gp-btn {
-  flex: 0 0 auto; min-width: 160px; padding: 10px 14px; text-align: center; transition: all 0.2s ease;
-}
-.gp-action-row.center .gp-btn:hover { background: #1e73ff; color: #fff; box-shadow: 0 6px 14px rgba(30,115,255,0.25); }
 
-/* Modal (QR) */
-.gp-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 60; }
-.gp-modal { background: #fff; padding: 18px; border-radius: 10px; max-width: 420px; width: 90%; box-shadow: 0 20px 40px rgba(16,24,40,0.2); }
-.gp-modal-title { margin: 0 0 12px; font-weight: 700; color: #17202a; }
-.gp-modal-center { text-align: center; }
-.gp-qr-large { width: 260px; height: 260px; border-radius: 10px; background: #fff; display: inline-block; border: 1px solid #eee; }
-
-/* tip and close */
-.gp-tip { margin-top: 12px; font-size: 13px; color: var(--muted); }
-.gp-close-row { text-align: right; margin-top: 12px; }
-
-/* Responsive */
-@media (max-width: 900px) {
-  .gp-container { grid-template-columns: 1fr; }
-  .gp-preview-wrapper { margin-top: 18px; width: 100%; }
-  .gp-form-card, .gp-preview-wrapper { padding: 16px; }
+@media (max-width:480px){
+  .gp-qr-large{ width:220px; height:220px; }
 }
