@@ -4,6 +4,7 @@ import CctvAiFeeds from "../../pages/anpr/CctvAiFeeds";
 import LayoutComponent from "../../components/Layout/Layout";
 import CrowdedPeople from "../../pages/Crowded/CrowdedPeople";
 import GatePassApp from "../../pages/gatepass/GatePassApp";
+import OfficersTrack from "../../pages/officerstracking/OfficersTrack";
 
 
 export const SecureRoutes = () => {
@@ -14,6 +15,7 @@ export const SecureRoutes = () => {
                  <Route path="cctv-ai-feeds" element={<CctvAiFeeds />} />
                  <Route path="crowded-people" element={<CrowdedPeople />} />
                  <Route path="gate-pass" element={<GatePassApp />} />
+                 <Route path="officers-track" element={<OfficersTrack />} />
 
             </Route>
     </Routes>

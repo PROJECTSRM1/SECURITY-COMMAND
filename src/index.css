@@ -109,6 +109,25 @@ body{
 }
 /* Layout design ends */
 
+/* components */
+
+.rjb-subheadings {
+  background: #e6f4ff;
+  padding: 10px;
+  color: rgb(81, 153, 205);
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.rjb-stat-card-hover:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px #0000001f !important;
+    --tw-duration: .3s;
+    transition-duration: .3s;
+}
+
+/* components style ends */
+
 @media screen and (min-width: 600px) {
   .rjb-dynamic-inputbox {
       min-width: 300px;

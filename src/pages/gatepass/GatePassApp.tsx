@@ -15,7 +15,7 @@ type FormState = {
   photoDataUrl?: string | null;
 };
 
-export default function GatePassApp(): JSX.Element {
+export default function GatePassApp(){
   // Start with EMPTY fields
   const [form, setForm] = useState<FormState>({
     fullName: "",
