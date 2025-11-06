@@ -4,7 +4,7 @@ import { Col, Row } from 'antd';
 import { UsergroupAddOutlined, AlertOutlined, AimOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { Card, Statistic } from 'antd';
 
-import Cam1 from '../../assets/cam1.jpeg';
+// import Cam1 from '../../assets/cam1.jpeg';
 
 import MapsComponent from '../MapsComponent/MapsComponent';
 import TableComponent from '../TableComponent/TableComponent';

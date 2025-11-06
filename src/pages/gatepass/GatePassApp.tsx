@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import * as QRCode from "qrcode";
+// import * as QRCode from "qrcode";
+import QRCode from "qrcode";
+
 import { Avatar } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import "./GatePass.css";
@@ -22,7 +24,7 @@ type VisitorEntry = FormState & {
 
 const LS_KEY = "rjb_gatepass_visitors_v1";
 
-export default function GatePassApp(): JSX.Element {
+export default function GatePassApp()  {
   const [form, setForm] = useState<FormState>({
     fullName: "",
     idProof: "",

@@ -16,7 +16,7 @@ import {
 import { Layout, Menu, theme, Modal, message } from 'antd';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import HeaderBar from '../header/header';
-import { Path } from 'leaflet';
+// import { Path } from 'leaflet';
 
 const { Content, Sider } = Layout;
 const { confirm } = Modal;

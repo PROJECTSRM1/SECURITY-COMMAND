@@ -1,8 +1,8 @@
 
-import React from "react";
+// import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./CrowdedPeople.css";
-import type Title from "antd/es/skeleton/Title";
+// import type Title from "antd/es/skeleton/Title";
 
 const feeds = [
   { id: 1, src: "https://media.istockphoto.com/id/474291174/photo/varanasi-crowd.jpg?b=1&s=612x612&w=0&k=20&c=N5RfZ5wQ_71oDpKYed7zqVt7X_AbXhzw6BEoj_fntRA=", label: "Camera 1", camlink: "https://www.youtube.com/embed/VnvAffnMd2k?autoplay=1&mute=1&controls=1&loop=1&playlist=VnvAffnMd2k&start=4"},
