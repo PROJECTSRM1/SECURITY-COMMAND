@@ -1,7 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-// import * as QRCode from "qrcode";
-import QRCode from "qrcode";
-
+import QRCode from "qrcode"; // default import (ESM)
 import { Avatar } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import "./GatePass.css";
@@ -24,7 +22,7 @@ type VisitorEntry = FormState & {
 
 const LS_KEY = "rjb_gatepass_visitors_v1";
 
-export default function GatePassApp()  {
+export default function GatePassApp() {
   const [form, setForm] = useState<FormState>({
     fullName: "",
     idProof: "",
@@ -90,6 +88,7 @@ export default function GatePassApp()  {
     return `${dd}-${mm}-${yyyy} ${String(h).padStart(2, "0")}:${m} ${am}`;
   }
 
+  // (kept for PDF/internal uses)
   function escapeHtml(str: string) {
     return String(str)
       .replaceAll("&", "&amp;")
@@ -129,6 +128,25 @@ export default function GatePassApp()  {
     return `data:text/html;base64,${btoa(unescape(encodeURIComponent(html)))}`;
   }
 
+  // Build PLAIN TEXT for the QR (so phones show details directly; no hosting needed)
+  function buildQrText(
+    data: VisitorEntry,
+    passType: "Gate Pass" | "Visitor Pass"
+  ): string {
+    return [
+      "RJB Security — Pass",
+      `Type: ${passType}`,
+      `Name: ${data.fullName}`,
+      `ID Proof: ${data.idProof}`,
+      `Mobile: ${data.mobile}`,
+      `Purpose: ${data.purpose}`,
+      `Access: ${data.accessArea}`,
+      `Entry: ${prettyDateTime(data.entry)}`,
+      `Valid Till: ${prettyDateTime(data.validTill)}`,
+      data.photoDataUrl ? "Photo: yes" : "Photo: no",
+    ].join("\n");
+  }
+
   // storage
   useEffect(() => {
     try {
@@ -145,6 +163,7 @@ export default function GatePassApp()  {
     const { name, value } = e.target;
     setForm((p) => ({ ...p, [name]: value }));
   }
+
   function onPhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -178,6 +197,7 @@ export default function GatePassApp()  {
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
+  // Generate QR with PLAIN TEXT payload (no URL, no hosting)
   async function openQrFor(
     entry: VisitorEntry,
     passType: "Gate Pass" | "Visitor Pass"
@@ -187,9 +207,9 @@ export default function GatePassApp()  {
     setCurrentEntry(entry);
     setCurrentPassType(passType);
     try {
-      const dataHtml = buildDataHtml(entry, passType);
-      const url = await QRCode.toDataURL(dataHtml, {
-        errorCorrectionLevel: "L",
+      const textPayload = buildQrText(entry, passType);
+      const url = await QRCode.toDataURL(textPayload, {
+        errorCorrectionLevel: "M",
         type: "image/png",
         margin: 1,
         scale: 6,
@@ -236,7 +256,7 @@ export default function GatePassApp()  {
     pdf.setTextColor(0);
 
     // QR centered
-    const qrSize = 60; // mm (adjust if you want)
+    const qrSize = 60; // mm
     y += 10;
     const qrX = (pageW - qrSize) / 2;
     pdf.addImage(qrDataUrl, "PNG", qrX, y, qrSize, qrSize);
@@ -251,8 +271,8 @@ export default function GatePassApp()  {
 
     // Details block (centered under QR/photo)
     let detailsY = afterQrY + (currentEntry.photoDataUrl ? 16 : 0) + 10;
-    const labelW = 26; // width reserved for labels
-    const valueStartX = (pageW - 100) / 2 + labelW; // keep about 100mm wide area centered
+    const labelW = 26;
+    const valueStartX = (pageW - 100) / 2 + labelW;
     const labelStartX = valueStartX - labelW;
 
     const line = (label: string, value: string) => {
