@@ -5,6 +5,11 @@ import { MapContainer, TileLayer, Marker, Popup,
 import "leaflet/dist/leaflet.css";
 import { markersData } from '../../utils/constants/data';
 import { useAppSelector } from '../../app/hooks';
+// import { PushpinOutlined } from '@ant-design/icons'
+import { FaLocationDot } from "react-icons/fa6";
+import L from 'leaflet';
+import { renderToString } from 'react-dom/server';
+
 
 // const MapUpdater = ({ selectedOfficer }: { selectedOfficer: any }) => {
 //   const map = useMap();
@@ -18,6 +23,13 @@ import { useAppSelector } from '../../app/hooks';
 
 //   return null; // nothing to render
 // };
+
+const pushpinIcon = L.divIcon({
+  html: renderToString(<FaLocationDot style={{ fontSize: 32, color: '#4697d0' }} />),
+  className: '', // remove default leaflet styles
+  iconSize: [24, 24], // optional
+  iconAnchor: [12, 24], // optional (where the "tip" of icon points)
+});
 
 export default function MapView() {
   const markerRefs = useRef<Record<string, L.Marker>>({});
@@ -59,6 +71,7 @@ export default function MapView() {
 
       {markersData.map((m: any) => (
         <Marker
+        icon={pushpinIcon}
           key={m.id}
           position={m.position}
           ref={(ref) => {

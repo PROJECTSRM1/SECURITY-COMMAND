@@ -1,11 +1,11 @@
 import React from 'react';
 import {
   NotificationOutlined,
-  UserOutlined,
+  // UserOutlined,
   LogoutOutlined,
-  HeatMapOutlined,
-  AppstoreAddOutlined,
-  GatewayOutlined,
+  // HeatMapOutlined,
+  // AppstoreAddOutlined,
+  // GatewayOutlined,
   // SettingOutlined,
   PicCenterOutlined,
   ExclamationCircleOutlined,
@@ -13,6 +13,10 @@ import {
   MenuUnfoldOutlined,
   // RobotOutlined
 } from '@ant-design/icons';
+import { GiPoliceOfficerHead } from "react-icons/gi";
+import { HiMiniUserGroup } from "react-icons/hi2";
+import { MdOutlineDashboardCustomize } from "react-icons/md";
+import { GiIndiaGate } from "react-icons/gi";
 import { Layout, Menu, theme, Modal, message } from 'antd';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import HeaderBar from '../header/header';
@@ -23,23 +27,23 @@ const { confirm } = Modal;
 
 const MenuItems = [
   { menuIcon: MenuUnfoldOutlined, label: 'Menu' },
-  { menuIcon: UserOutlined, label: 'Dashboard', path: '/app/dashboard' },
+  { menuIcon: MdOutlineDashboardCustomize, label: 'Dashboard', path: '/app/dashboard' },
     {
       key: 'Live Map',
-      menuIcon: HeatMapOutlined,
+      menuIcon: HiMiniUserGroup,
       label: 'Crowded People',
       path:'/app/crowded-people'
     },
     {
       key: 'Officer Tracking',
-      menuIcon: AppstoreAddOutlined,
+      menuIcon: GiPoliceOfficerHead,
       label: 'Officer Tracking',
       path: '/app/officers-track'
     },
     {
       key: 'Gate Pass & Visitors',
       label: 'Gate Pass & Visitors',
-      menuIcon: GatewayOutlined,
+      menuIcon: GiIndiaGate,
       path:'/app/gate-pass'
     },
     {
