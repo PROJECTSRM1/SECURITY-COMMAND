@@ -1,8 +1,11 @@
+import html2pdf from "html2pdf.js";
 import React, { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode"; // default import (ESM)
 import { Avatar } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import "./GatePass.css";
+import GatePassCard from "./GatePassCard";
+import VisitorPassCard from "./VisitorPassCard";
 
 type FormState = {
   fullName: string;
@@ -48,6 +51,8 @@ export default function GatePassApp() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const modalRef = useRef<HTMLDivElement | null>(null);
+  const printRef = useRef<HTMLDivElement>(null);
+
 
   // Lock body scroll + ESC close
   useEffect(() => {
@@ -146,7 +151,7 @@ export default function GatePassApp() {
       data.photoDataUrl ? "Photo: yes" : "Photo: no",
     ].join("\n");
   }
-
+// const printRef = useRef<HTMLDivElement>(null);
   // storage
   useEffect(() => {
     try {
@@ -223,92 +228,42 @@ export default function GatePassApp() {
       setQrLoading(false);
     }
   }
+  
 
   /* VERSION 1 (stacked): A5 portrait, QR centered on top, details below */
-  async function downloadPdf(): Promise<void> {
-    if (!qrDataUrl || !currentEntry) {
-      alert("Generate a pass first.");
-      return;
-    }
-    const { jsPDF } = await import("jspdf");
-
-    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a5" });
-    const pageW = pdf.internal.pageSize.getWidth();
-    const pageH = pdf.internal.pageSize.getHeight();
-    const margin = 12;
-    const innerW = pageW - margin * 2;
-
-    // Card background
-    pdf.setDrawColor(230);
-    pdf.setFillColor(255, 255, 255);
-    pdf.roundedRect(margin, margin, innerW, pageH - margin * 2, 3, 3, "FD");
-
-    // Header
-    let y = margin + 10;
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(16);
-    pdf.text(`${currentPassType}`, margin + 8, y);
-
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(10);
-    pdf.setTextColor(120);
-    pdf.text("RJB Security Command • Verified by AI", pageW - margin - 8, y, { align: "right" });
-    pdf.setTextColor(0);
-
-    // QR centered
-    const qrSize = 60; // mm
-    y += 10;
-    const qrX = (pageW - qrSize) / 2;
-    pdf.addImage(qrDataUrl, "PNG", qrX, y, qrSize, qrSize);
-
-    // Optional photo chip under QR (centered)
-    const afterQrY = y + qrSize + 6;
-    if (currentEntry.photoDataUrl) {
-      const photoSize = 16;
-      const photoX = (pageW - photoSize) / 2;
-      pdf.addImage(currentEntry.photoDataUrl, "JPEG", photoX, afterQrY, photoSize, photoSize, undefined, "FAST");
-    }
-
-    // Details block (centered under QR/photo)
-    let detailsY = afterQrY + (currentEntry.photoDataUrl ? 16 : 0) + 10;
-    const labelW = 26;
-    const valueStartX = (pageW - 100) / 2 + labelW;
-    const labelStartX = valueStartX - labelW;
-
-    const line = (label: string, value: string) => {
-      pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(12);
-      pdf.text(label, labelStartX, detailsY);
-      pdf.setFont("helvetica", "normal");
-      pdf.setFontSize(12);
-      pdf.text(value || "-", valueStartX, detailsY);
-      detailsY += 8;
-    };
-
-    line("Name", currentEntry.fullName);
-    line("ID Proof", currentEntry.idProof);
-    line("Mobile", currentEntry.mobile);
-    line("Purpose", currentEntry.purpose);
-    line("Access", currentEntry.accessArea);
-    line("Entry", prettyDateTime(currentEntry.entry));
-    line("Valid Till", prettyDateTime(currentEntry.validTill));
-
-    // Footer timestamp
-    pdf.setFontSize(9);
-    pdf.setTextColor(120);
-    pdf.text(
-      `Generated: ${prettyDateTime(new Date().toISOString())}`,
-      margin + 8,
-      pageH - margin - 6
-    );
-
-    pdf.save(
-      `${currentEntry.fullName.replace(/\s+/g, "_")}_${currentPassType.replace(" ", "")}.pdf`
-    );
+async function downloadPdf() {
+  if (!printRef.current) {
+    alert("Nothing to export!");
+    return;
   }
+  // Options for best quality and A5 size
+  const opt: any = {
+    margin: 0,
+    filename: `${currentEntry?.fullName || "rjb"}_${currentPassType.replace(" ", "_")}_pass.pdf`,
+    // image: { type: "jpeg", quality: 0.98 },
+    image: { type: "jpeg" as const, quality: 0.98 },
+
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: "mm", format: "a5", orientation: "portrait" }
+  };
+  await html2pdf().set(opt).from(printRef.current).save();
+
+}
+
 
   return (
     <div className="gp-app">
+      <div style={{ display: "none" }}>
+  <div ref={printRef}>
+    {currentPassType === "Gate Pass" && currentEntry && (
+      <GatePassCard entry={currentEntry} qrDataUrl={qrDataUrl} />
+    )}
+    {currentPassType === "Visitor Pass" && currentEntry && (
+      <VisitorPassCard entry={currentEntry} qrDataUrl={qrDataUrl} />
+    )}
+  </div>
+</div>
+
       <div className="gp-container">
         {/* LEFT: FORM */}
         <div className="gp-form-card">
