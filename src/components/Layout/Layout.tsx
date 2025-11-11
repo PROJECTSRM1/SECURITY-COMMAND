@@ -11,6 +11,7 @@ import {
   ExclamationCircleOutlined,
   PieChartOutlined,
   MenuUnfoldOutlined,
+  SettingOutlined,
   // RobotOutlined
 } from '@ant-design/icons';
 import { GiPoliceOfficerHead } from "react-icons/gi";
@@ -61,6 +62,14 @@ const MenuItems = [
       key: 'AI Alerts',
       label: 'AI Alerts',
       menuIcon: NotificationOutlined,
+      path:'/app/ai-alerts'
+
+    },
+    {
+      key: 'Settings',
+      label: 'Settings',
+      menuIcon: SettingOutlined,
+      // path:'/app/ai-alerts'
     },
     // {
     //   key: 'System Health',

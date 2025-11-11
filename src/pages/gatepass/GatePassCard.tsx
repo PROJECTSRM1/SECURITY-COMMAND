@@ -1,5 +1,6 @@
 import React from "react";
 import "./GateVisitorPass.css";
+import ayodhyaLogo from "../../assets/ayodhya-logo.png"; 
 
 type EntryProps = {
   entry: {
@@ -17,7 +18,7 @@ type EntryProps = {
 const GatePassCard: React.FC<EntryProps> = ({ entry, qrDataUrl }) => (
  <div className="gatepass-card">
      <div className="gatepass-header-row">
-  <img className="gatepass-logo" src="/ayodhya-logo.png" alt="Logo" />
+<img className="gatepass-logo" src={ayodhyaLogo} alt="Logo" />
   <div className="gatepass-titles">
     <div className="gatepass-title-hindi">श्री राम जन्मभूमि तीर्थ क्षेत्र</div>
     <div className="gatepass-title-en">SHRI RAM JANMBHOOMI TEERTH KSHETRA</div>
