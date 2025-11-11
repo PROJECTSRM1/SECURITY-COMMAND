@@ -93,46 +93,6 @@ export default function GatePassApp() {
     return `${dd}-${mm}-${yyyy} ${String(h).padStart(2, "0")}:${m} ${am}`;
   }
 
-  // (kept for PDF/internal uses)
-  // function escapeHtml(str: string) {
-  //   return String(str)
-  //     .replaceAll("&", "&amp;")
-  //     .replaceAll("<", "&lt;")
-  //     .replaceAll(">", "&gt;")
-  //     .replaceAll('"', "&quot;")
-  //     .replaceAll("'", "&#39;");
-  // }
-
-//   function buildDataHtml(
-//     data: VisitorEntry,
-//     passType: "Gate Pass" | "Visitor Pass"
-//   ): string {
-//     const photoHtml = data.photoDataUrl
-//       ? `<div class="photo-wrapper"><img class="photo" src="${data.photoDataUrl}" alt="photo"></div>`
-//       : "";
-
-//     const html = `<!doctype html>
-// <html lang="en"><head>
-// <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-// <title>${escapeHtml(passType)} - ${escapeHtml(data.fullName)}</title>
-// <link rel="stylesheet" href="qr-card.css">
-// </head><body>
-//   <div class="card">
-//     ${photoHtml}
-//     <h2 class="title">${escapeHtml(data.fullName)}</h2>
-//     <div class="sub">${escapeHtml(data.idProof)}</div>
-//     <div class="row"><div class="label">Mobile</div><div>${escapeHtml(data.mobile)}</div></div>
-//     <div class="row"><div class="label">Purpose</div><div>${escapeHtml(data.purpose)}</div></div>
-//     <div class="row"><div class="label">Access</div><div>${escapeHtml(data.accessArea)}</div></div>
-//     <div class="row"><div class="label">Entry</div><div>${escapeHtml(prettyDateTime(data.entry))}</div></div>
-//     <div class="row"><div class="label">Valid Till</div><div>${escapeHtml(prettyDateTime(data.validTill))}</div></div>
-//     <div class="row"><div class="label">Pass Type</div><div>${escapeHtml(passType)}</div></div>
-//     <div class="verified">Verified by AI</div>
-//   </div>
-// </body></html>`;
-//     return `data:text/html;base64,${btoa(unescape(encodeURIComponent(html)))}`;
-//   }
-
   // Build PLAIN TEXT for the QR (so phones show details directly; no hosting needed)
   function buildQrText(
     data: VisitorEntry,
