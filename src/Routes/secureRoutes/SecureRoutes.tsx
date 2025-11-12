@@ -6,6 +6,8 @@ import CrowdedPeople from "../../pages/Crowded/CrowdedPeople";
 import GatePassApp from "../../pages/gatepass/GatePassApp";
 import OfficersTrack from "../../pages/officerstracking/OfficersTrack";
 import AlertsPanel from "../../pages/alertspanel/Alertspanel";
+import AnalyticsReports from "../../pages/analytics/AnalyticsReports";
+import SettingsPage from "../../pages/settings/SettingsPage";
 
 export const SecureRoutes = () => {
     
@@ -17,6 +19,8 @@ export const SecureRoutes = () => {
                  <Route path="gate-pass" element={<GatePassApp />} />
                  <Route path="officers-track" element={<OfficersTrack />} />
                  <Route path="ai-alerts" element={<AlertsPanel />} />
+                 <Route path="analytics" element={<AnalyticsReports />} />
+                 <Route path="settings" element={<SettingsPage />} />
 
             </Route>
     </Routes>

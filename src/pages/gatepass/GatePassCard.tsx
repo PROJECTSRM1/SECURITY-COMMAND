@@ -16,50 +16,47 @@ type EntryProps = {
 };
 
 const GatePassCard: React.FC<EntryProps> = ({ entry, qrDataUrl }) => (
- <div className="gatepass-card">
-     <div className="gatepass-header-row">
-<img className="gatepass-logo" src={ayodhyaLogo} alt="Logo" />
-  <div className="gatepass-titles">
-    <div className="gatepass-title-hindi">श्री राम जन्मभूमि तीर्थ क्षेत्र</div>
-    <div className="gatepass-title-en">SHRI RAM JANMBHOOMI TEERTH KSHETRA</div>
-    <div className="gatepass-title-sub">PRAN PRATISHTHA</div>
+ <div className="rjb-gatepass-card">
+     <div className="rjb-gatepass-header-row">
+<img className="rjb-gatepass-logo" src={ayodhyaLogo} alt="Logo" />
+  <div className="rjb-gatepass-titles">
+    <div className="rjb-gatepass-title-hindi">श्री राम जन्मभूमि तीर्थ क्षेत्र</div>
+    <div className="rjb-gatepass-title-en">SHRI RAM JANMBHOOMI TEERTH KSHETRA</div>
+    <div className="rjb-gatepass-title-sub">PRAN PRATISHTHA</div>
   </div>
 </div>
+         <div className="rjb-gatepass-banner">प्रवेश पास / ENTRY PASS</div>
 
-
-
-         <div className="gatepass-banner">प्रवेश पास / ENTRY PASS</div>
-
-     <div className="gatepass-details-row">
-   <div className="gatepass-details-main">
-    <div className="gatepass-photo">
+     <div className="rjb-gatepass-details-row">
+   <div className="rjb-gatepass-details-main">
+    <div className="rjb-gatepass-photo">
      {entry.photoDataUrl ? (
         <img src={entry.photoDataUrl} alt="Profile" />
       ) : (
-        <div className="gatepass-avatar" />
+        <div className="rjb-gatepass-avatar" />
       )}
     </div>
-<table className="gatepass-fields-table">
+<table className="rjb-gatepass-fields-table">
   <tbody>
     <tr>
-      <td className="lbl">Name</td>
-      <td className="value">{entry.fullName}</td>
+      <td className="rjb-lbl">Name</td>
+      <td className="rjb-value">{entry.fullName}</td>
     </tr>
     <tr>
-      <td className="lbl">Mobile</td>
-      <td className="value">{entry.mobile}</td>
+      <td className="rjb-lbl">Mobile</td>
+      <td className="rjb-value">{entry.mobile}</td>
     </tr>
     <tr>
-      <td className="lbl">ID Proof</td>
-      <td className="value">{entry.idProof}</td>
+      <td className="rjb-lbl">ID Proof</td>
+      <td className="rjb-value">{entry.idProof}</td>
     </tr>
     <tr>
-      <td className="lbl">Category</td>
-      <td className="value">{entry.purpose}</td>
+      <td className="rjb-lbl">Category</td>
+      <td className="rjb-value">{entry.purpose}</td>
     </tr>
     <tr>
-      <td className="lbl">Access</td>
-      <td className="value">{entry.accessArea}</td>
+      <td className="rjb-lbl">Access</td>
+      <td className="rjb-value">{entry.accessArea}</td>
     </tr>
   </tbody>
 </table>
@@ -67,12 +64,12 @@ const GatePassCard: React.FC<EntryProps> = ({ entry, qrDataUrl }) => (
 
 
   </div>
-  <div className="gatepass-qrwrap">
+  <div className="rjb-gatepass-qrwrap">
     <img src={qrDataUrl} alt="QR" />
   </div>
 </div>
 
-//   </div>
+ </div>
 );
 
 export default GatePassCard;

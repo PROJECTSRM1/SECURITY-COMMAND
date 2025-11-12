@@ -57,6 +57,7 @@ const MenuItems = [
       key: 'Analytics & Reports',
       label: 'Analytics & Reports',
       menuIcon: PieChartOutlined,
+      path:'/app/analytics'
     },
     {
       key: 'AI Alerts',
@@ -69,7 +70,7 @@ const MenuItems = [
       key: 'Settings',
       label: 'Settings',
       menuIcon: SettingOutlined,
-      // path:'/app/ai-alerts'
+      path:'/app/settings'
     },
     // {
     //   key: 'System Health',

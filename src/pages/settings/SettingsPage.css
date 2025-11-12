@@ -1,0 +1,95 @@
+:root{
+  --bg:#f6f8fb;
+   --card:#fff;
+    --muted:#67718a;
+     --text:#081028; 
+     --accent:#2563eb; 
+     --border:#e6e9ef;
+}
+
+.rjb-ms-page{
+  min-height:100vh;
+  background:var(--bg);
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+  padding:20px;
+  box-sizing:border-box;
+}
+
+.rjb-ms-card{
+  max-width:900px;
+  margin:18px auto;
+  background:var(--card);
+  border-radius:12px;
+  padding:18px;
+  box-shadow:0 8px 24px rgba(12,17,37,0.06);
+  border:1px solid var(--border);
+}
+
+.rjb-ms-row.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:12px;
+  gap:12px;
+}
+
+.rjb-ms-title{ margin:0; font-size:18px; font-weight:700; color:var(--text); }
+.rjb-ms-sub{ color:var(--muted); font-size:13px; }
+
+.rjb-ms-section{ padding:10px 0; border-top:1px solid #f1f4f8; margin-top:8px; }
+.rjb-ms-section-head{ font-weight:700; color:var(--text); margin-bottom:8px; }
+
+.rjb-ms-field{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:8px 0;
+  border-bottom:1px solid #fafbfd;
+}
+
+.rjb-ms-field label{ flex:1; font-weight:600; color:var(--text); }
+.rjb-ms-field input[type="number"]{
+  width:160px;
+  padding:8px 10px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:#fff;
+  text-align:right;
+}
+.rjb-ms-field input[type="checkbox"]{ width:18px; height:18px; }
+
+.rjb-ms-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:14px;
+}
+
+.rjb-ms-btn{
+  padding:8px 12px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:#fff;
+  font-weight:700;
+  cursor:pointer;
+}
+.rjb-ms-btn:disabled{ opacity:0.6; cursor:not-allowed; }
+.rjb-ms-btn-ghost{ background:transparent; border:1px solid rgba(0,0,0,0.04); }
+.rjb-ms-btn-primary{ background:linear-gradient(90deg,#2563eb,#4f7bff); color:#fff; border:0; }
+
+.rjb-ms-foot{ margin-top:12px; color:var(--muted); font-size:13px; }
+
+/* small toast */
+.rjb-ms-toast{
+  position:fixed; right:18px; bottom:18px; background:#12263b; color:#fff; padding:8px 12px; border-radius:8px;
+  transform:translateY(8px); opacity:0; transition:all .18s ease;
+}
+.rjb-ms-toast-visible{ transform:translateY(0); opacity:1; }
+
+/* responsive */
+@media (max-width:720px){
+  .rjb-ms-field{ flex-direction:column; align-items:flex-start; gap:8px; }
+  .rjb-ms-field input[type="number"]{ width:100%; text-align:left; }
+  .rjb-ms-card{ padding:14px; margin:12px; }
+}

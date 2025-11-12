@@ -1,4 +1,4 @@
-.visitorpass-card {
+.rjb-visitorpass-card {
   width: 360px;
   margin: 20px auto;
   border-radius: 18px;
@@ -9,18 +9,18 @@
   text-align: center;
   position: relative;
 }
-.visitorpass-photo img,
-.visitorpass-avatar {
+.rjb-visitorpass-photo img,
+.rjb-visitorpass-avatar {
   width: 76px;
   height: 76px;
   border-radius: 50%;
   background: #eee;
   margin: 0 auto 8px auto;
 }
-.visitorpass-name { font-size: 1.6rem; font-weight: 600; margin: 6px 0 1px 0; color:black}
-.visitorpass-id { font-size: 1.09rem; color: #626262; margin-bottom: 9px; }
-.visitorpass-qr img { width: 110px; height: 110px; margin: 8px 0 6px 0; }
-.visitorpass-verified {
+.rjb-visitorpass-name { font-size: 1.6rem; font-weight: 600; margin: 6px 0 1px 0; color:black}
+.rjb-visitorpass-id { font-size: 1.09rem; color: #626262; margin-bottom: 9px; }
+.rjb-visitorpass-qr img { width: 110px; height: 110px; margin: 8px 0 6px 0; }
+.rjb-visitorpass-verified {
   background: #57dd87;
   color: #fff;
   padding: 6px 0;
@@ -29,21 +29,10 @@
   font-weight: 600;
   margin: 8px 0 6px 0;
 }
-.visitorpass-entry { color: #575757; font-size: 1.08rem; margin-top: 5px; }
+.rjb-visitorpass-entry { color: #575757; font-size: 1.08rem; margin-top: 5px; }
 
 
-
-
-
-
-
-
-
-
-
-
-
-.gatepass-card {
+.rjb-gatepass-card {
   width: 420px;
   margin: 20px auto;
   background: #eaeffb;
@@ -53,8 +42,8 @@
   padding: 12px 14px 18px 14px;
   position: relative;
 }
-.gatepass-header-row {
- display: flex;
+.rjb-gatepass-header-row {
+  display: flex;
   align-items: flex-start;
   gap: 13px;           
   margin-bottom: 7px;
@@ -62,7 +51,7 @@
   padding-bottom: 18px;
 }
 
-.gatepass-logo {
+.rjb-gatepass-logo {
   width: 90px;
   height: 90px;
   object-fit: contain;
@@ -71,7 +60,7 @@
   margin-top: 4px;
 }
 
-.gatepass-titles {
+.rjb-gatepass-titles {
  flex: 1;
   min-width: 0;
   display: flex;
@@ -81,7 +70,7 @@
   margin-bottom: 8px;
 }
 
-.gatepass-title-hindi {
+.rjb-gatepass-title-hindi {
   color: #c60000;
   font-size: 1.2rem;
   font-weight: 700;
@@ -92,7 +81,7 @@
   white-space: normal;
 }
 
-.gatepass-title-en {
+.rjb-gatepass-title-en {
  color: #910020;
   font-size: 0.81rem;
   font-weight: 700;
@@ -104,7 +93,7 @@
   margin-bottom: 6px;
 }
 
-.gatepass-title-sub {
+.rjb-gatepass-title-sub {
   color: #174fa3;
   font-size: 1.08rem;
   font-weight: 500;
@@ -115,19 +104,19 @@
 
 
 /* The main row: left (photo+fields), right: QR */
-.gatepass-details-row {
+.rjb-gatepass-details-row {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 12px;
 }
 
-.gatepass-details-main {
+.rjb-gatepass-details-main {
   display: flex;
 }
 
-.gatepass-photo img,
-.gatepass-avatar {
+.rjb-gatepass-photo img,
+.rjb-gatepass-avatar {
   width: 52px;
   height: 52px;
   border-radius: 7px;
@@ -137,19 +126,19 @@
 }
 
 
-.gatepass-fields-table {
+.rjb-gatepass-fields-table {
   width: 100%;
   margin-top: 7px;
   border-collapse: collapse;
 }
 
-.gatepass-fields-table td {
+.rjb-gatepass-fields-table td {
   padding: 5px 8px 3px 0;
   font-size: 1.12rem;
   vertical-align: top;
 }
 
-.gatepass-fields-table .lbl {
+.rjb-gatepass-fields-table .rjb-lbl {
   color: #262626;
   font-weight: 600;
   width: 122px;
@@ -160,7 +149,7 @@
   border: none;
 }
 
-.gatepass-fields-table .value {
+.rjb-gatepass-fields-table .rjb-value {
   color: #434444;
   font-weight: 400;
   text-align: left;
@@ -169,20 +158,17 @@
   border: none;
 }
 
-
-
-
-.gatepass-qrwrap {
+.rjb-gatepass-qrwrap {
   display: flex;
   justify-content: center;
   align-items: start;
   min-width: 92px;
 }
-.gatepass-qrwrap img {
+.rjb-gatepass-qrwrap img {
   width: 80px;
   height: 80px;
 }
-.gatepass-banner {
+.rjb-gatepass-banner {
   display: block;                /* not inline-block, allows margin auto centering */
   width: fit-content;             /* so it shrinks to text */
   margin: 10px auto 15px auto;   /* auto left/right centers the pill horizontally */
