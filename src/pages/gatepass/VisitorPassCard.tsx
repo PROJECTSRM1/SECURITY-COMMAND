@@ -16,21 +16,21 @@ type EntryProps = {
 };
 
 const VisitorPassCard: React.FC<EntryProps> = ({ entry, qrDataUrl }) => (
-  <div className="visitorpass-card">
-    <div className="visitorpass-photo">
+  <div className="rjb-visitorpass-card">
+    <div className="rjb-visitorpass-photo">
       {entry.photoDataUrl ? (
         <img src={entry.photoDataUrl} alt="Profile" />
       ) : (
-        <div className="visitorpass-avatar" />
+        <div className="rjb-visitorpass-avatar" />
       )}
     </div>
-    <div className="visitorpass-name">{entry.fullName}</div>
-    <div className="visitorpass-id">{entry.idProof}</div>
-    <div className="visitorpass-qr">
+    <div className="rjb-visitorpass-name">{entry.fullName}</div>
+    <div className="rjb-visitorpass-id">{entry.idProof}</div>
+    <div className="rjb-visitorpass-qr">
       <img src={qrDataUrl} alt="QR" />
     </div>
-    <div className="visitorpass-verified">✔ Verified by AI</div>
-    <div className="visitorpass-entry">
+    <div className="rjb-visitorpass-verified">✔ Verified by AI</div>
+    <div className="rjb-visitorpass-entry">
       Gate Entry: {entry.entry}
     </div>
   </div>

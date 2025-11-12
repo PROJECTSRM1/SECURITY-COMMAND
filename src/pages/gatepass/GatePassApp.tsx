@@ -1,3 +1,4 @@
+
 import html2pdf from "html2pdf.js";
 import React, { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode"; // default import (ESM)
@@ -43,6 +44,9 @@ export default function GatePassApp() {
   const [qrLoading, setQrLoading] = useState<boolean>(false);
   const [qrTitle, setQrTitle] = useState<string>("");
 
+  // validation errors
+  const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
+
   // Track which pass is open (for PDF layout)
   const [currentEntry, setCurrentEntry] = useState<VisitorEntry | null>(null);
   const [currentPassType, setCurrentPassType] =
@@ -52,7 +56,6 @@ export default function GatePassApp() {
   const listRef = useRef<HTMLDivElement | null>(null);
   const modalRef = useRef<HTMLDivElement | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
-
 
   // Lock body scroll + ESC close
   useEffect(() => {
@@ -67,17 +70,6 @@ export default function GatePassApp() {
       window.removeEventListener("keydown", onKey);
     };
   }, [showQrModal]);
-
-  const isFormValid = Boolean(
-    form.fullName.trim() &&
-      form.idProof.trim() &&
-      form.mobile.trim() &&
-      form.purpose &&
-      form.accessArea &&
-      form.entry &&
-      form.validTill &&
-      new Date(form.validTill) > new Date(form.entry)
-  );
 
   function prettyDateTime(iso: string) {
     if (!iso) return "";
@@ -111,7 +103,7 @@ export default function GatePassApp() {
       data.photoDataUrl ? "Photo: yes" : "Photo: no",
     ].join("\n");
   }
-// const printRef = useRef<HTMLDivElement>(null);
+
   // storage
   useEffect(() => {
     try {
@@ -123,23 +115,123 @@ export default function GatePassApp() {
     localStorage.setItem(LS_KEY, JSON.stringify(list));
   }, [list]);
 
+  // ----- Validation logic -----
+  function validateField<K extends keyof FormState>(name: K, value: FormState[K]): string | null {
+    switch (name) {
+      case "fullName": {
+        const v = (value as string).trim();
+        if (!v) return "Full name is required.";
+        if (v.length < 3) return "Enter at least 3 characters.";
+        return null;
+      }
+      case "idProof": {
+        const v = (value as string).trim();
+        if (!v) return "ID proof number is required.";
+        // allow letters, numbers, hyphens, min 4 chars
+        if (!/^[A-Za-z0-9\-]{4,}$/.test(v)) return "Enter a valid ID (alphanumeric, - allowed).";
+        return null;
+      }
+      case "mobile": {
+        const v = (value as string).trim();
+        if (!v) return "Mobile number is required.";
+        // accept 10 digits or +91xxxxxxxxxx
+        if (!/^([6-9]\d{9}|\+91[6-9]\d{9})$/.test(v)) return "Enter a valid 10-digit Indian mobile number.";
+        return null;
+      }
+      case "purpose": {
+        const v = (value as string).trim();
+        if (!v) return "Select purpose of visit.";
+        return null;
+      }
+      case "accessArea": {
+        const v = (value as string).trim();
+        if (!v) return "Select access area.";
+        return null;
+      }
+      case "entry": {
+        const v = (value as string).trim();
+        if (!v) return "Entry date & time is required.";
+        const dt = new Date(v);
+        if (isNaN(dt.getTime())) return "Enter a valid date & time.";
+        // Optional: don't allow entry in the past (comment out if you want past entries)
+        // if (dt.getTime() < Date.now() - 5 * 60 * 1000) return "Entry cannot be in the past.";
+        // if validTill exists, check relation below
+        if (form.validTill) {
+          const vt = new Date(form.validTill);
+          if (!isNaN(vt.getTime()) && vt.getTime() <= dt.getTime()) return "'Valid Till' must be after Entry.";
+        }
+        return null;
+      }
+      case "validTill": {
+        const v = (value as string).trim();
+        if (!v) return "Valid till date & time is required.";
+        const dt = new Date(v);
+        if (isNaN(dt.getTime())) return "Enter a valid date & time.";
+        const entryDt = new Date(form.entry);
+        if (form.entry && !isNaN(entryDt.getTime()) && dt.getTime() <= entryDt.getTime()) return "'Valid Till' must be after Entry.";
+        return null;
+      }
+      case "photoDataUrl":
+        return null; // optional
+      default:
+        return null;
+    }
+  }
+
+  function setField<K extends keyof FormState>(name: K, value: FormState[K]) {
+    setForm((p) => ({ ...p, [name]: value }));
+    // validate immediately and update errors
+    const err = validateField(name, value);
+    setErrors((prev) => {
+      const copy = { ...prev };
+      if (err) copy[name] = err;
+      else delete (copy as any)[name];
+      return copy;
+    });
+  }
+
+  function validateAll(): boolean {
+    const newErrors: Partial<Record<keyof FormState, string>> = {};
+    (Object.keys(form) as (keyof FormState)[]).forEach((k) => {
+      const err = validateField(k, form[k]);
+      if (err) newErrors[k] = err;
+    });
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
+
+  const isFormValid = (): boolean => {
+    // cheap check: required fields present and no errors
+    const requiredPresent = Boolean(
+      form.fullName.trim() &&
+        form.idProof.trim() &&
+        form.mobile.trim() &&
+        form.purpose &&
+        form.accessArea &&
+        form.entry &&
+        form.validTill
+    );
+    return requiredPresent && Object.keys(errors).length === 0;
+  };
+
   // form handlers
   function onChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
-    const { name, value } = e.target;
-    setForm((p) => ({ ...p, [name]: value }));
+    const { name, value } = e.target as HTMLInputElement;
+    setField(name as keyof FormState, value as any);
   }
 
   function onPhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () =>
-      setForm((p) => ({ ...p, photoDataUrl: reader.result as string }));
+    reader.onload = () => setField("photoDataUrl", reader.result as string);
     reader.readAsDataURL(file);
   }
 
   function handleSave() {
-    if (!isFormValid) return;
+    // final validation
+    if (!validateAll()) return;
+
     const entry: VisitorEntry = {
       ...form,
       id: crypto.randomUUID(),
@@ -159,6 +251,7 @@ export default function GatePassApp() {
       validTill: "",
       photoDataUrl: null,
     });
+    setErrors({});
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -188,172 +281,180 @@ export default function GatePassApp() {
       setQrLoading(false);
     }
   }
-  
 
-  /* VERSION 1 (stacked): A5 portrait, QR centered on top, details below */
-async function downloadPdf() {
-  if (!printRef.current) {
-    alert("Nothing to export!");
-    return;
+  async function downloadPdf() {
+    if (!printRef.current) {
+      alert("Nothing to export!");
+      return;
+    }
+    const opt: any = {
+      margin: 0,
+      filename: `${currentEntry?.fullName || "rjb"}_${currentPassType.replace(" ", "_")}_pass.pdf`,
+      image: { type: "jpeg" as const, quality: 0.98 },
+
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "mm", format: "a5", orientation: "portrait" },
+    };
+    await html2pdf().set(opt).from(printRef.current).save();
   }
-  // Options for best quality and A5 size
-  const opt: any = {
-    margin: 0,
-    filename: `${currentEntry?.fullName || "rjb"}_${currentPassType.replace(" ", "_")}_pass.pdf`,
-    // image: { type: "jpeg", quality: 0.98 },
-    image: { type: "jpeg" as const, quality: 0.98 },
-
-    html2canvas: { scale: 2 },
-    jsPDF: { unit: "mm", format: "a5", orientation: "portrait" }
-  };
-  await html2pdf().set(opt).from(printRef.current).save();
-
-}
-
 
   return (
-    <div className="gp-app">
+    <div className="rjb-gp-app">
       <div style={{ display: "none" }}>
-  <div ref={printRef}>
-    {currentPassType === "Gate Pass" && currentEntry && (
-      <GatePassCard entry={currentEntry} qrDataUrl={qrDataUrl} />
-    )}
-    {currentPassType === "Visitor Pass" && currentEntry && (
-      <VisitorPassCard entry={currentEntry} qrDataUrl={qrDataUrl} />
-    )}
-  </div>
-</div>
+        <div ref={printRef}>
+          {currentPassType === "Gate Pass" && currentEntry && (
+            <GatePassCard entry={currentEntry} qrDataUrl={qrDataUrl} />
+          )}
+          {currentPassType === "Visitor Pass" && currentEntry && (
+            <VisitorPassCard entry={currentEntry} qrDataUrl={qrDataUrl} />
+          )}
+        </div>
+      </div>
 
-      <div className="gp-container">
+      <div className="rjb-gp-container">
         {/* LEFT: FORM */}
-        <div className="gp-form-card">
-          <h3 className="gp-heading">Gate Pass Details</h3>
+        <div className="rjb-gp-form-card">
+          <h3 className="rjb-gp-heading">Gate Pass Details</h3>
 
-          <label className="gp-label">Upload Photo (optional)</label>
+          <label className="rjb-gp-label">Upload Photo (optional)</label>
           <input
             ref={fileInputRef}
             type="file"
             accept="image/*"
             onChange={onPhotoChange}
-            className="gp-input"
+            className={`gp-input ${errors.photoDataUrl ? "error" : ""}`}
           />
 
-          <label className="gp-label">Full Name</label>
+          <label className="rjb-gp-label">Full Name</label>
           <input
-            className="gp-input"
+            className={`rjb-gp-input ${errors.fullName ? "error" : ""}`}
             name="fullName"
             placeholder="Enter full name"
             value={form.fullName}
             onChange={onChange}
+            aria-invalid={!!errors.fullName}
           />
+          {errors.fullName && <div className="rjb-gp-error">{errors.fullName}</div>}
 
-          <label className="gp-label">ID Proof Number</label>
+          <label className="rjb-gp-label">ID Proof Number</label>
           <input
-            className="gp-input"
+            className={`rjb-gp-input ${errors.idProof ? "error" : ""}`}
             name="idProof"
             placeholder="SRJBTK-AYD-2025-000124"
             value={form.idProof}
             onChange={onChange}
+            aria-invalid={!!errors.idProof}
           />
+          {errors.idProof && <div className="rjb-gp-error">{errors.idProof}</div>}
 
-          <label className="gp-label">Mobile Number</label>
+          <label className="rjb-gp-label">Mobile Number</label>
           <input
-            className="gp-input"
+            className={`rjb-gp-input ${errors.mobile ? "error" : ""}`}
             name="mobile"
             placeholder="9XXXXXXXXX"
             value={form.mobile}
             onChange={onChange}
+            aria-invalid={!!errors.mobile}
           />
+          {errors.mobile && <div className="rjb-gp-error">{errors.mobile}</div>}
 
-          <div className="gp-form-row">
-            <div className="gp-col">
-              <label className="gp-label">Purpose of Visit</label>
+          <div className="rjb-gp-form-row">
+            <div className="rjb-gp-col">
+              <label className="rjb-gp-label">Purpose of Visit</label>
               <select
-                className="gp-select"
+                className={`rjb-gp-select ${errors.purpose ? "error" : ""}`}
                 name="purpose"
                 value={form.purpose}
                 onChange={onChange}
+                aria-invalid={!!errors.purpose}
               >
                 <option value="">Select purpose</option>
                 <option>Devotee</option>
                 <option>Employee</option>
                 <option>Visitor</option>
               </select>
+              {errors.purpose && <div className="rjb-gp-error">{errors.purpose}</div>}
             </div>
-            <div className="gp-col">
-              <label className="gp-label">Access Area</label>
+            <div className="rjb-gp-col">
+              <label className="rjb-gp-label">Access Area</label>
               <select
-                className="gp-select"
+                className={`rjb-gp-select ${errors.accessArea ? "error" : ""}`}
                 name="accessArea"
                 value={form.accessArea}
                 onChange={onChange}
+                aria-invalid={!!errors.accessArea}
               >
                 <option value="">Select access</option>
                 <option>Inner Sanctum</option>
                 <option>Outer Hall</option>
                 <option>Garden</option>
               </select>
+              {errors.accessArea && <div className="rjb-gp-error">{errors.accessArea}</div>}
             </div>
           </div>
 
-          <div className="gp-form-row">
-            <div className="gp-col">
-              <label className="gp-label">Date &amp; Time</label>
+          <div className="rjb-gp-form-row">
+            <div className="rjb-gp-col">
+              <label className="rjb-gp-label">Date &amp; Time</label>
               <input
                 type="datetime-local"
-                className="gp-input"
+                className={`rjb-gp-input ${errors.entry ? "error" : ""}`}
                 name="entry"
                 value={form.entry}
                 onChange={onChange}
+                aria-invalid={!!errors.entry}
               />
+              {errors.entry && <div className="rjb-gp-error">{errors.entry}</div>}
             </div>
-            <div className="gp-col">
-              <label className="gp-label">Valid Till</label>
+            <div className="rjb-gp-col">
+              <label className="rjb-gp-label">Valid Till</label>
               <input
                 type="datetime-local"
-                className="gp-input"
+                className={`rjb-gp-input ${errors.validTill ? "error" : ""}`}
                 name="validTill"
                 value={form.validTill}
                 min={form.entry || undefined}
                 onChange={onChange}
+                aria-invalid={!!errors.validTill}
               />
+              {errors.validTill && <div className="rjb-gp-error">{errors.validTill}</div>}
             </div>
           </div>
 
-          <div className="gp-button-row">
+          <div className="rjb-gp-button-row">
             <button
               type="button"
-              className="gp-button gp-btn-primary"
+              className="rjb-gp-button rjb-gp-btn-primary"
               onClick={handleSave}
-              disabled={!isFormValid}
-              title={!isFormValid ? "Fill all fields to save" : ""}
+              disabled={!isFormValid()}
+              title={!isFormValid() ? "Fix validation errors before saving" : ""}
             >
               Save
             </button>
           </div>
 
-          <div className="gp-hint">
+          <div className="rjb-gp-hint">
             Saved entries appear on the right. Click a pass button to generate a QR.
           </div>
         </div>
 
         {/* RIGHT: TABLE */}
-        <div ref={listRef} className="gp-list-card">
-          <div className="gp-table-head gp-sticky-head">
+        <div ref={listRef} className="rjb-gp-list-card">
+          <div className="rjb-gp-table-head rjb-gp-sticky-head">
             <div>Visitor</div>
             <div>Full Name</div>
             <div>Purpose</div>
           </div>
 
           {list.length === 0 ? (
-            <div className="gp-empty">No entries yet.</div>
+            <div className="rjb-gp-empty">No entries yet.</div>
           ) : (
-            <div className="gp-table-body">
+            <div className="rjb-gp-table-body">
               {list.map((v) => (
-                <div key={v.id} className="gp-row">
+                <div key={v.id} className="rjb-gp-row">
                   {/* Avatar */}
-                  <div className="c1">
-                    <div className="gp-avatar-wrap">
+                  <div className="rjb-c1">
+                    <div className="rjb-gp-avatar-wrap">
                       <Avatar
                         size={44}
                         src={v.photoDataUrl || undefined}
@@ -364,14 +465,14 @@ async function downloadPdf() {
                   </div>
 
                   {/* Name & Purpose */}
-                  <div className="c2">{v.fullName}</div>
-                  <div className="c3">{v.purpose}</div>
+                  <div className="rjb-c2">{v.fullName}</div>
+                  <div className="rjb-c3">{v.purpose}</div>
 
                   {/* Actions under name→purpose */}
-                  <div className="c4">
+                  <div className="rjb-c4">
                     <button
                       type="button"
-                      className="gp-chip"
+                      className="rjb-gp-chip"
                       onClick={() => openQrFor(v, "Gate Pass")}
                       disabled={qrLoading}
                     >
@@ -379,7 +480,7 @@ async function downloadPdf() {
                     </button>
                     <button
                       type="button"
-                      className="gp-chip"
+                      className="rjb-gp-chip"
                       onClick={() => openQrFor(v, "Visitor Pass")}
                       disabled={qrLoading}
                     >
@@ -395,28 +496,28 @@ async function downloadPdf() {
 
       {/* QR MODAL */}
       {showQrModal && (
-        <div className="gp-modal-backdrop" onClick={() => setShowQrModal(false)}>
+        <div className="rjb-gp-modal-backdrop" onClick={() => setShowQrModal(false)}>
           <div
             ref={modalRef}
-            className="gp-modal"
+            className="rjb-gp-modal"
             onClick={(e) => e.stopPropagation()}
             tabIndex={-1}
             role="dialog"
             aria-modal="true"
             aria-label="QR code modal"
           >
-            <h4 className="gp-modal-title">{qrTitle || "Gate Pass"}</h4>
-            <div className="gp-modal-center">
+            <h4 className="rjb-gp-modal-title">{qrTitle || "Gate Pass"}</h4>
+            <div className="rjb-gp-modal-center">
               {qrDataUrl ? (
-                <img className="gp-qr-large" src={qrDataUrl} alt="QR code" />
+                <img className="rjb-gp-qr-large" src={qrDataUrl} alt="QR code" />
               ) : (
-                <div className="gp-qr-loading">Generating QR...</div>
+                <div className="rjb-gp-qr-loading">Generating QR...</div>
               )}
             </div>
-            <div className="gp-modal-actions">
+            <div className="rjb-gp-modal-actions">
               <button
                 type="button"
-                className="gp-button"
+                className="rjb-gp-button"
                 onClick={downloadPdf}
                 disabled={!qrDataUrl}
               >
@@ -424,7 +525,7 @@ async function downloadPdf() {
               </button>
               <button
                 type="button"
-                className="gp-button"
+                className="rjb-gp-button"
                 onClick={() => setShowQrModal(false)}
               >
                 Close
