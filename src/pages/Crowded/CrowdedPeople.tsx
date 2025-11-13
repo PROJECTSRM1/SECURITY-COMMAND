@@ -47,7 +47,8 @@ const CrowdedPeople: React.FC = () => {
       <Drawer
         title={selectedFeed?.label ?? "Camera Feed"}
         placement="right"
-        width={"70%"}
+        // width={"70%"}
+        width={window.innerWidth < 600 ? "100%" : "70%"}
         onClose={closeDrawer}
         open={drawerOpen}
         bodyStyle={{ padding: 0, height: "100%" }}

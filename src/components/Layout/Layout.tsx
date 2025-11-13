@@ -36,6 +36,12 @@ const MenuItems = [
       path:'/app/crowded-people'
     },
     {
+      key: 'Officers',
+      menuIcon: GiPoliceOfficerHead,
+      label: 'Officers',
+      path: '/app/officers'
+    },
+    {
       key: 'Officer Tracking',
       menuIcon: GiPoliceOfficerHead,
       label: 'Officer Tracking',
