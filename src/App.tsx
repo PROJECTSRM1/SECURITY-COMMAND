@@ -1,11 +1,11 @@
 import { AppRoutes } from './Routes/AppRoutes.tsx';
 import './App.css';
-  import { ToastContainer } from 'react-toastify';
+  // import { ToastContainer } from 'react-toastify';
 
 function App() {
   return (
     <>
-      <ToastContainer />
+      {/* <ToastContainer /> */}
       <AppRoutes />
     </>
   )
