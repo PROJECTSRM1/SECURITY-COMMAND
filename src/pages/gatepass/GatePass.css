@@ -8,21 +8,23 @@
   --shadow:0 6px 18px rgba(0,0,0,.08);
   --shadow-hover:0 12px 30px rgba(0,0,0,.12);
   --font-main:"Inter",system-ui,sans-serif;
-  --primary-bg:#f7f7f9;   /* <-- add this */
+  --primary-bg:#f7f7f9;
 }
 
-
-
+/* ---------- App shell ---------- */
 .rjb-gp-app{
   background:var(--primary-bg);
   color:var(--text);
   min-height:100vh;
   padding:28px 16px;
   font-family:var(--font-main);
-  display:flex;justify-content:center;align-items:flex-start;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  box-sizing:border-box;
 }
 
-/* Left form + right table */
+/* Left form + right table (desktop grid) */
 .rjb-gp-container{
   display:grid;
   grid-template-columns:560px 1fr;
@@ -32,7 +34,7 @@
   box-sizing:border-box;
 }
 
-/* Form card */
+/* ---------- FORM CARD (left) ---------- */
 .rjb-gp-form-card{
   background:var(--card-bg);
   border-radius:12px;
@@ -40,6 +42,7 @@
   box-shadow:var(--shadow);
   transition:box-shadow .25s, transform .25s;
   width:100%;
+  box-sizing:border-box;
 }
 .rjb-gp-form-card:hover{ box-shadow:var(--shadow-hover); transform:translateY(-2px); }
 
@@ -47,36 +50,48 @@
 .rjb-gp-label{ display:block; font-size:13px; margin-top:10px; color:var(--muted); }
 
 .rjb-gp-input,.rjb-gp-select{
-  width:100%; margin-top:8px; padding:10px 12px; background:#fff; color:var(--text);
-  border:1px solid #e8e3df; border-radius:8px; outline:none;
-  transition:border-color .2s, box-shadow .2s; box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
+  width:100%;
+  margin-top:8px;
+  padding:10px 12px;
+  background:#fff;
+  color:var(--text);
+  border:1px solid #e8e3df;
+  border-radius:8px;
+  outline:none;
+  transition:border-color .2s, box-shadow .2s;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
+  box-sizing:border-box;
 }
 .rjb-gp-input:focus,.rjb-gp-select:focus{ border-color:rgba(0,0,0,.08); box-shadow:0 6px 12px rgba(16,24,40,.03); }
 
-.rjb-gp-form-row{ display:flex; gap:12px; margin-top:10px; }
-.rjb-gp-col{ flex:1; }
+.rjb-gp-form-row{ display:flex; gap:12px; margin-top:10px; box-sizing:border-box; }
+.rjb-gp-col{ flex:1; box-sizing:border-box; }
 
 .rjb-gp-button-row{ display:flex; gap:12px; margin-top:18px; }
 .rjb-gp-button{
   flex:1; padding:10px 14px; font-weight:700; font-size:14px; border:none; border-radius:8px;
   cursor:pointer; transition:transform .12s, box-shadow .12s; box-shadow:0 4px 10px rgba(0,0,0,.05);
+  box-sizing:border-box;
 }
 .rjb-gp-btn-primary{ background:#1e73ff; color:#fff; }
 .rjb-gp-btn-primary:hover{ transform:translateY(-2px); box-shadow:0 10px 20px rgba(30,115,255,.18); }
 
 .rjb-gp-hint{ margin-top:12px; font-size:13px; color:var(--muted); }
 
-/* ---------- Right panel: Visitor table ---------- */
+/* ---------- RIGHT PANEL: Visitor list ---------- */
 .rjb-gp-list-card{
   background:var(--card-bg);
   border-radius:12px;
   box-shadow:var(--shadow);
   padding:10px 14px;
-  display:flex; flex-direction:column;
-  box-sizing:border-box; overflow:hidden; max-width:100%;
+  display:flex;
+  flex-direction:column;
+  box-sizing:border-box;
+  overflow:visible;
+  max-width:100%;
 }
 
-/* Header = 3 columns (no Actions) */
+/* Header = 3 columns (desktop) */
 .rjb-gp-table-head{
   display:grid;
   grid-template-columns:60px 1.8fr 1.2fr;
@@ -87,13 +102,15 @@
   background:#f8fafc;
   border-bottom:1px solid #eaeaea;
   color:#1b1b1b;
+  box-sizing:border-box;
+  z-index:2;
 }
-.rjb-gp-table-head > div{ text-align:left; padding:0 6px; white-space:nowrap; }
+.rjb-gp-table-head > div{ text-align:left; padding:0 6px; white-space:nowrap; font-size:14px; }
 
-/* Body container */
-.rjb-gp-table-body{ display:flex; flex-direction:column; }
+/* Body container - list */
+.rjb-gp-table-body{ display:flex; flex-direction:column; gap:8px; box-sizing:border-box; }
 
-
+/* Default desktop row: two-line grid so actions sit below */
 .rjb-gp-row{
   display:grid;
   grid-template-columns:60px 1.8fr 1.2fr;
@@ -106,10 +123,12 @@
   border-bottom:1px solid #f1f1f1;
   background:#fff6f0;
   box-sizing:border-box;
+  border-radius:10px;
 }
 .rjb-gp-row:nth-child(even){ background:#fff9f4; }
 .rjb-gp-row:last-child{ border-bottom:none; }
 
+/* Empty state */
 .rjb-gp-empty{ padding:18px; color:var(--muted); }
 
 /* Avatar */
@@ -122,40 +141,43 @@
 .rjb-gp-tab-avatar-fallback{ width:70%; height:70%; border-radius:50%; background:#e0dfdc; }
 
 /* Cells */
-.rjb-c1{ grid-area:avatar; justify-self:start; }
+.rjb-c1{ grid-area:avatar; justify-self:start; align-self:center; }
 .rjb-c2{ grid-area:name;    min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .rjb-c3{ grid-area:purpose; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
-/* Actions row under the whole row; align left so it starts under avatar */
+/* Actions row under the whole row; align center on desktop */
 .rjb-c4 {
- display: flex;
-  justify-content: center;
-  gap: 16px;
-  margin: 12px auto 20px;
-  max-width: 420px;   /* keeps them as a tidy pair */
-  padding: 0 12px;    /* small breathing room on narrow screens */
-  box-sizing: border-box;
+  grid-area: actions;
+  display:flex;
+  justify-content:center;
+  gap:16px;
+  margin:12px auto 20px;
+  max-width:420px;
+  padding:0 12px;
+  box-sizing:border-box;
+  width:100%;
 }
-.rjb-c4 .rjb-gp-chip { flex: 0 0 140px; }
 
-/* Buttons */
+/* Action buttons / chips */
 .rjb-gp-chip{
-    padding: 9px 12px;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
-  background: #fff;
-  font-weight: 700;
-  font-size: 13px;
-  text-align: center;
-  flex: 0 0 160px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, box-shadow 0.1s;
-  
+  padding:9px 12px;
+  border-radius:8px;
+  border:1px solid #d1d5db;
+  background:#fff;
+  font-weight:700;
+  font-size:13px;
+  text-align:center;
+  flex:0 0 160px;
+  cursor:pointer;
+  transition:background 0.15s, color 0.15s, box-shadow 0.1s;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 .rjb-gp-chip:hover{ background:#1e73ff; color:#fff; box-shadow:0 4px 10px rgba(30,115,255,.18); }
 
-/* Sticky head */
-.rjb-gp-sticky-head{ position:sticky; top:0; z-index:1; }
+/* Sticky header if used */
+.rjb-gp-sticky-head{ position:sticky; top:0; z-index:3; }
 
 /* ---------- QR modal ---------- */
 .rjb-gp-modal-backdrop{
@@ -164,81 +186,128 @@
 }
 .rjb-gp-modal{
   background:#fff; padding:18px; border-radius:12px; width:min(92vw,440px);
-  box-shadow:0 24px 60px rgba(16,24,40,.25); outline:none;
+  box-shadow:0 24px 60px rgba(16,24,40,.25); outline:none; box-sizing:border-box;
 }
 .rjb-gp-modal-title{ margin:0 0 12px; font-weight:700; color:#17202a; text-align:center; }
 .rjb-gp-modal-center{ text-align:center; margin:8px 0 12px; }
 .rjb-gp-qr-large{ width:280px; height:280px; display:inline-block; border-radius:10px; border:1px solid #eee; object-fit:contain; }
 .rjb-gp-modal-actions{ display:flex; gap:10px; justify-content:center; }
 
+/* Avatar ring style (Antd) */
+.rjb-gp-avatar-wrap { display:inline-flex; align-items:center; justify-content:center; }
+.rjb-gp-avatar-wrap .ant-avatar { box-shadow: 0 0 0 3px #ffffff, 0 0 0 4px #e5e7eb; border-radius:50%; }
 
-/* Use Ant Design Avatar but give it a clean ring like the sample */
-.rjb-gp-avatar-wrap {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+/* ---------- Accessibility / focus ---------- */
+.rjb-gp-input:focus, .rjb-gp-select:focus, .rjb-gp-chip:focus, .rjb-gp-button:focus {
+  outline: 3px solid rgba(30,115,255,0.08);
+  outline-offset: 2px;
+  border-color: rgba(30,115,255,0.16);
 }
 
-/* white inner ring + subtle outer border to match your UI */
-.rjb-gp-avatar-wrap .ant-avatar {
-  box-shadow: 0 0 0 3px #ffffff, 0 0 0 4px #e5e7eb;
-  /* keeps it perfectly round even if size changes */
-  border-radius: 50%;
-}
-
-/* ---------- Responsive ---------- */
-@media (max-width:900px){
-  .rjb-gp-container{ grid-template-columns:1fr; gap:16px; }
-  .rjb-gp-form-card{ padding:16px; }
-
-  .rjb-gp-table-head{ grid-template-columns:52px 1.4fr 1fr; gap:12px; }
-
-  .rjb-gp-row{
-    grid-template-columns:52px 1.4fr 1fr;
-    grid-template-areas:
-      "avatar name purpose"
-      "actions actions actions";
-    gap:12px;
-  }
-
-  /* On mobile, auto-wrap & center the buttons */
-  .rjb-c4{ justify-content:center; flex-wrap:wrap; gap:8px; }
-  .rjb-gp-chip{ flex:1 1 48%; min-width:130px; padding:7px 9px; font-size:12px; }
-}
-
-@media (max-width:480px){
-  .rjb-gp-qr-large{ width:220px; height:220px; }
-}
-
-
-/* --- Error Styling --- */
+/* Error styles */
 .rjb-gp-input.error,
 .rjb-gp-select.error,
 .gp-input.error {
-  border-color: #ef4444; /* Red border */
+  border-color: #ef4444;
   background: #fff5f5;
-  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
+  box-shadow: 0 0 0 2px rgba(239,68,68,0.1);
 }
-
 .rjb-gp-input.error:focus,
 .rjb-gp-select.error:focus,
 .gp-input.error:focus {
   border-color: #dc2626;
-  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.15);
+  box-shadow: 0 0 0 2px rgba(220,38,38,0.15);
+}
+.rjb-gp-error { color:#dc2626; font-size:12px; margin-top:4px; margin-bottom:2px; line-height:1.3; animation:fadeIn .2s ease; }
+@keyframes fadeIn { from{opacity:0; transform:translateY(-2px)} to{opacity:1; transform:none} }
+
+/* ========== FIXES + RESPONSIVE (only affect small screens) ========== */
+
+/* Ensure header and cells behave correctly on all sizes */
+.rjb-c2, .rjb-c3 { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* Prevent action buttons from escaping the card */
+.rjb-gp-row { position:relative; overflow:visible; }
+.rjb-c4 {
+  grid-column: 1 / -1;       /* ensure actions span full width and stay inside */
+  justify-content:center;
+  flex-wrap:wrap;
 }
 
-/* Inline error text */
-.rjb-gp-error {
-  color: #dc2626;
-  font-size: 12px;
-  margin-top: 4px;
-  margin-bottom: 2px;
-  line-height: 1.3;
-  animation: fadeIn 0.2s ease;
+/* Make sure chips do not force overflow */
+.rjb-gp-chip { max-width:calc(100% - 24px); }
+
+/* ---------- Mobile: stack into card rows ---------- */
+@media (max-width: 900px) {
+  .rjb-gp-app { padding:18px 12px; align-items:flex-start; }
+
+  /* stack left + right */
+  .rjb-gp-container {
+    display:block;
+    width:100%;
+    max-width:820px;
+    margin:0 auto;
+    gap:12px;
+    box-sizing:border-box;
+  }
+
+  .rjb-gp-form-card,
+  .rjb-gp-list-card { width:100%; margin-bottom:14px; }
+
+  .rjb-gp-form-card { padding:16px; border-radius:12px; }
+  .rjb-gp-heading { font-size:18px; }
+
+  /* form rows -> vertical */
+  .rjb-gp-form-row { flex-direction:column; gap:10px; }
+  .rjb-gp-col { width:100%; }
+
+  .rjb-gp-input, .rjb-gp-select, input[type="file"] { padding:12px 14px; font-size:15px; }
+
+  .rjb-gp-button-row { flex-direction:column; gap:10px; }
+  .rjb-gp-button { width:100%; flex:none; padding:12px 14px; border-radius:10px; font-size:15px; }
+
+  /* hide the table header (desktop header not suitable for small cards) */
+  .rjb-gp-table-head { display:none; }
+
+  /* Each list entry becomes a compact card */
+  .rjb-gp-row {
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:8px;
+    padding:12px;
+    border-radius:10px;
+    margin-bottom:10px;
+    background:var(--card-bg);
+  }
+
+  /* top row: avatar + name/purpose inline */
+  .rjb-row-top { display:flex; gap:12px; align-items:center; }
+
+  .rjb-c1 { order:0; flex:0 0 52px; display:flex; align-items:center; justify-content:flex-start; }
+  .rjb-c2 { order:1; flex:1 1 auto; min-width:0; white-space:normal; overflow:visible; }
+  .rjb-c3 { order:2; flex:0 0 auto; text-align:left; white-space:normal; }
+
+  /* show small labels above content for clarity on mobile */
+  .rjb-c2::before { content:"Full Name"; display:block; font-size:12px; color:var(--muted); font-weight:700; margin-bottom:6px; }
+  .rjb-c3::before { content:"Purpose"; display:block; font-size:12px; color:var(--muted); font-weight:700; margin-bottom:6px; }
+
+  /* actions wrap and become half-width chips */
+  .rjb-c4 { order:3; display:flex; gap:8px; justify-content:flex-start; padding:0; margin-top:8px; }
+  .rjb-gp-chip { flex:1 1 calc(50% - 8px); min-width:120px; max-width:100%; }
 }
 
-/* Error animation (subtle fade) */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-2px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Very small phones: stack chips single column */
+@media (max-width: 420px) {
+  .rjb-gp-form-card { padding:14px; }
+  .rjb-gp-heading { font-size:17px; }
+  .rjb-gp-input, .rjb-gp-select, input[type="file"] { padding:12px; font-size:15px; }
+  .rjb-gp-chip { font-size:13px; padding:9px 10px; }
+  .rjb-gp-row { padding:10px; gap:10px; }
+  .rjb-gp-chip { flex:1 1 100%; }
+  .rjb-c2::before { content:"Name"; }
+  .rjb-c3::before { content:"Purpose"; }
 }
+
+/* Safety: prevent container overflow from hiding header/content */
+.rjb-gp-list-card, .rjb-gp-table-body { overflow:visible !important; }
