@@ -2,13 +2,16 @@
   width: 360px;
   margin: 20px auto;
   border-radius: 18px;
-  background: #fff;
+  background: #F7F3E8; /* light cream */
+  border: 2px solid #EADFC8; /* cream-tinted border */
   box-shadow: 0 4px 28px #e0e0e0;
   padding: 24px 16px 14px 16px;
   font-family: 'Montserrat', Arial, sans-serif;
   text-align: center;
   position: relative;
+  /* height: 600px; */
 }
+
 .rjb-visitorpass-photo img,
 .rjb-visitorpass-avatar {
   width: 76px;

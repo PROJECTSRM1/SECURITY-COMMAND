@@ -1,8 +1,20 @@
 /* AnalyticsReports.css - basic, self-contained styles for the analytics page */
 .rjb-ar-root { padding: 18px; font-family: Inter, Roboto, system-ui, Arial, sans-serif; color: #0b1220; }
-.rjb-ar-header { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; }
+.rjb-ar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
 .rjb-ar-header h2 { margin:0; font-size:20px; }
-.rjb-ar-filters { display:flex; gap:8px; align-items:center; }
+.rjb-ar-filters {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
 .rjb-ar-filters label { font-size:13px; color:#374151; display:flex; gap:6px; align-items:center; }
 .rjb-ar-filters input[type="date"] { padding:6px 8px; border-radius:6px; border:1px solid #e6e9ef; }
 
@@ -36,7 +48,41 @@
 .rjb-pagination { display:flex; justify-content:space-between; align-items:center; margin-top:10px; gap:12px; }
 .rjb-page { padding:6px 10px; }
 
-@media (max-width: 980px) {
+
+
+@media (max-width: 720px) {
+
+  /* Stack title above filters */
+  .rjb-ar-header {
+    flex-direction: column;
+    align-items: flex-start;      /* <— important */
+  }
+
   .rjb-ar-kpis { grid-template-columns:repeat(2,1fr); }
   .rjb-ar-charts { grid-template-columns:1fr; }
+
+  /* Title stays in 1 block */
+  .rjb-ar-header h2 {
+    margin-bottom: 6px;
+    white-space: nowrap;          /* <— stops line breaks */
+  }
+
+  /* Filters wrap naturally below */
+  .rjb-ar-filters {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 10px;
+  }
+
+  /* Date inputs scale properly */
+  .rjb-ar-filters label {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    white-space: nowrap;
+  }
+
+  .rjb-ar-filters input[type="date"] {
+    width: 140px;
+  }
 }

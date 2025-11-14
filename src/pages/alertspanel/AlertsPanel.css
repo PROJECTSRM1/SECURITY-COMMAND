@@ -398,3 +398,67 @@
   color: #b91c1c;
   border-color: #fca5a5;
 }
+
+/* ---------- Mobile responsive styles ---------- */
+@media only screen and (max-width: 768px) {
+
+  /* Make panel stack on mobile */
+  body .rjb-alerts-panel {
+    flex-direction: column !important;
+    height: auto !important;
+  }
+
+  /* Left list becomes top section */
+  body .rjb-alerts-list {
+    width: 100% !important;
+    border-right: none !important;
+    border-bottom: 1px solid #e6e6e6 !important;
+    max-height: 350px !important;
+    padding: 10px !important;
+  }
+
+  body .rjb-alerts-list-body {
+    max-height: 280px !important;
+    overflow-y: auto !important;
+  }
+
+  /* Mobile compact alert item */
+  body .rjb-alert-item {
+    display: block !important;
+    padding: 10px !important;
+  }
+
+  /* Meta aligns horizontally on mobile */
+  body .rjb-alert-main {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+
+  /* Actions wrap below */
+  body .rjb-alert-actions {
+    margin-top: 8px !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+  }
+
+  /* Right detail fills full width */
+  body .rjb-alerts-detail {
+    width: 100% !important;
+    height: auto !important;
+    padding: 10px !important;
+  }
+
+  /* Detail body stacks */
+  body .rjb-detail-body {
+    flex-direction: column !important;
+  }
+
+  body .rjb-media {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 180px !important;
+  }
+}
+
+
