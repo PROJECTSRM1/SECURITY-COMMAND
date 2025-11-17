@@ -1,4 +1,3 @@
-
 import html2pdf from "html2pdf.js";
 import React, { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode"; // default import (ESM)
@@ -25,6 +24,42 @@ type VisitorEntry = FormState & {
 };
 
 const LS_KEY = "rjb_gatepass_visitors_v1";
+
+/** --- New helper: compress/resize DataURL to a smaller JPEG DataURL --- */
+type CompressOpts = { maxWidth?: number; maxHeight?: number; quality?: number };
+
+function compressImageDataUrl(dataUrl: string, opts: CompressOpts = {}): Promise<string> {
+  const { maxWidth = 900, maxHeight = 900, quality = 0.7 } = opts;
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+      const scale = Math.min(1, Math.min(maxWidth / width, maxHeight / height));
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("Canvas not supported"));
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+
+      try {
+        const out = canvas.toDataURL("image/jpeg", quality);
+        resolve(out);
+      } catch (err) {
+        reject(err);
+      }
+    };
+    img.onerror = () => reject(new Error("Failed to load image for compression"));
+    img.src = dataUrl;
+  });
+}
 
 export default function GatePassApp() {
   const [form, setForm] = useState<FormState>({
@@ -104,15 +139,29 @@ export default function GatePassApp() {
     ].join("\n");
   }
 
-  // storage
+  // storage: load once
   useEffect(() => {
     try {
       const raw = localStorage.getItem(LS_KEY);
       if (raw) setList(JSON.parse(raw));
     } catch {}
   }, []);
+
+  // ----- Updated: safe localStorage write with try/catch -----
   useEffect(() => {
-    localStorage.setItem(LS_KEY, JSON.stringify(list));
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify(list));
+    } catch (err: any) {
+      console.error("Failed to save visitor list to localStorage:", err);
+      // user-friendly alert for quota issues
+      if (err && (err.name === "QuotaExceededError" || err.code === 22 || err.code === 1014)) {
+        alert(
+          "Saving failed: localStorage quota exceeded. Try removing old entries or disable photo saving."
+        );
+      } else {
+        alert("Failed to save visitor list. See console for details.");
+      }
+    }
   }, [list]);
 
   // ----- Validation logic -----
@@ -220,11 +269,39 @@ export default function GatePassApp() {
     setField(name as keyof FormState, value as any);
   }
 
+  /** --- Updated: compress/resize uploaded photo before storing --- */
   function onPhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // only accept images
+    if (!file.type.startsWith("image/")) {
+      alert("Please upload an image file.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
     const reader = new FileReader();
-    reader.onload = () => setField("photoDataUrl", reader.result as string);
+    reader.onload = async () => {
+      try {
+        const dataUrl = reader.result as string;
+        // compress/resize before storing (adjust opts if you want smaller/larger)
+        const compressed = await compressImageDataUrl(dataUrl, {
+          maxWidth: 900,
+          maxHeight: 900,
+          quality: 0.7,
+        });
+        setField("photoDataUrl", compressed);
+      } catch (err) {
+        console.error("Image processing error:", err);
+        alert("Failed to process image. See console for details.");
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
+    };
+    reader.onerror = () => {
+      alert("Unable to read the file.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    };
     reader.readAsDataURL(file);
   }
 

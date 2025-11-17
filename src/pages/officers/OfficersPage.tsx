@@ -39,14 +39,14 @@ function saveOfficersLocal(list: Officer[]) {
 }
 
 /* read escalate minutes from settings (fallback default) */
-function loadEscalateMinutes(): number {
+function loadEscalateHours(): number {
   try {
     const raw = localStorage.getItem(SETTINGS_LS);
-    if (!raw) return 10;
+    if (!raw) return 1; // default 1 hour
     const parsed = JSON.parse(raw);
-    return parsed?.officerTracking?.escalateIfOfflineMinutes ?? 10;
+    return parsed?.officerTracking?.escalateIfOfflineHours ?? 1;
   } catch {
-    return 10;
+    return 1;
   }
 }
 
@@ -64,7 +64,7 @@ export default function OfficersPage() {
   const [selectedView, setSelectedView] = useState<Officer | null>(null);
   const [loading, setLoading] = useState(false);
   const [nowTick, setNowTick] = useState(Date.now());
-  const escalateIfOfflineMinutes = useMemo(() => loadEscalateMinutes(), [nowTick]);
+  const escalateIfOfflineHours = useMemo(() => loadEscalateHours(), [nowTick]);
 
   // for pure local mode we load from localStorage on mount
   useEffect(() => {
@@ -85,10 +85,11 @@ export default function OfficersPage() {
     return () => clearInterval(t);
   }, []);
 
+  // ---- FIXED: compare in HOURS, not minutes ----
   function isOnline(o: Officer) {
     const last = new Date(o.lastSeen).getTime();
-    const diffMin = (Date.now() - last) / 1000 / 60;
-    return diffMin <= escalateIfOfflineMinutes;
+    const diffHours = (Date.now() - last) / 1000 / 60 / 60; // hours
+    return diffHours <= escalateIfOfflineHours;
   }
 
   const visible = officers.filter((o) => {
@@ -224,7 +225,16 @@ export default function OfficersPage() {
           ) : (
             visible.map((o) => {
               const online = isOnline(o);
-              const lastAgoMin = Math.round((Date.now() - new Date(o.lastSeen).getTime()) / 1000 / 60);
+
+              // compute a friendly 'last seen' label (minutes / hours / days)
+              const diffMs = Date.now() - new Date(o.lastSeen).getTime();
+              const lastAgoMin = Math.round(diffMs / 1000 / 60);
+              let lastAgoLabel = "just now";
+              if (lastAgoMin < 1) lastAgoLabel = "just now";
+              else if (lastAgoMin < 60) lastAgoLabel = `${lastAgoMin} min ago`;
+              else if (lastAgoMin < 60 * 24) lastAgoLabel = `${Math.round(lastAgoMin / 60)} hr ago`;
+              else lastAgoLabel = `${Math.round(lastAgoMin / 1440)} day(s) ago`;
+
               return (
                 <div key={o.id} className="rjb-ops-item">
                   <div className="rjb-ops-main">
@@ -238,7 +248,7 @@ export default function OfficersPage() {
 
                   <div className="rjb-ops-status">
                     <div className={`rjb-ops-dot ${online ? "online" : "offline"}`} title={online ? "Online" : "Offline"} />
-                    <div className="rjb-ops-last">{online ? "Active" : `${lastAgoMin} min ago`}</div>
+                    <div className="rjb-ops-last">{online ? "Active" : lastAgoLabel}</div>
                   </div>
 
                   <div className="rjb-ops-actions">

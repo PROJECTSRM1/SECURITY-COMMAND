@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from "react";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 import {
   Layout,
   Input,
@@ -21,29 +22,43 @@ import {
   LogoutOutlined,
   SettingOutlined,
   ExclamationCircleOutlined,
-  AlertOutlined
+  AlertOutlined,
 } from "@ant-design/icons";
 import BrandLogo from "../../assets/favIcon.png";
 import { useNavigate } from "react-router-dom";
+// import { Label } from "recharts";
 
 const { Header } = Layout;
 const { Text } = Typography;
 const { useBreakpoint } = Grid;
 const { confirm } = Modal;
 
+/* ------------------ WithActions (toast renderer) ------------------ */
 function WithActions({ closeToast, data }: any) {
   return (
     <div className="flex flex-col w-full">
-      <div style={{padding:'5px 0px'}}>
-        <AlertOutlined style={{color:'red'}} /> {data.title}
+      <div style={{ padding: "5px 0px" }}>
+        <AlertOutlined style={{ color: "red" }} /> {data?.title}
       </div>
 
-      <div className="pl-5 mt-2">
+      {data?.body && (
+        <div className="pl-5 mt-1" style={{ fontSize: 12, color: "#475569" }}>
+          {data.body}
+        </div>
+      )}
 
+      <div className="pl-5 mt-2">
         <div className="flex items-center gap-2">
-          <Button type="primary"
-            onClick={closeToast}
-            className="transition-all border-none text-sm font-semibold bg-transparent border rounded-md py-2 text-indigo-600 active:scale-[.95] "
+          <Button
+            type="primary"
+            onClick={() => {
+              if (data?.alertId) {
+                // send an event for other components to track or open the alert
+                window.dispatchEvent(new CustomEvent("rjb:track-on-map", { detail: { id: data.alertId } }));
+              }
+              closeToast?.();
+            }}
+            className="transition-all border-none text-sm font-semibold bg-transparent border rounded-md py-2 text-indigo-600 active:scale-[.95]"
           >
             📍 Track in map
           </Button>
@@ -53,16 +68,18 @@ function WithActions({ closeToast, data }: any) {
   );
 }
 
+/* ------------------ HeaderBar ------------------ */
 const HeaderBar: React.FC = () => {
   const screens = useBreakpoint();
   const navigate = useNavigate();
 
   const [userData, setUserData] = useState<any>(null);
   const [searchValue, setSearchValue] = useState("");
-  const [notifyMsg, setNotifyMsg] = useState("");
   const [searchSuggestions, setSearchSuggestions] = useState<any[]>([]);
 
-  const notify = (msg:any) => toast(WithActions, {
+  // local wrapper (keeps one appearance entry if used locally)
+  const notify = (msg: any) =>
+    toast(WithActions as any, {
       data: {
         title: msg,
       },
@@ -71,22 +88,150 @@ const HeaderBar: React.FC = () => {
       hideProgressBar: false,
     });
 
+  /* ---------- Global toast listener that renders WithActions (RESPECTS SETTINGS) ---------- */
+  useEffect(() => {
+    function onGlobalToast(e: Event) {
+      const detail = (e as CustomEvent).detail || {};
+      const title = detail.title || "Alert";
+      const body = detail.body;
+      const alertId = detail.alertId;
+
+      try {
+        const raw = localStorage.getItem("rjb_settings_v1");
+        const settings = raw ? JSON.parse(raw) : null;
+        const toastEnabled = settings?.aiAlerts?.toastNotifications ?? true;
+        if (!toastEnabled) {
+          return;
+        }
+      } catch (err) {
+      }
+
+      try {
+        toast(WithActions as any, {
+          data: { title, body, alertId },
+          closeButton: false,
+          autoClose: 6000,
+          hideProgressBar: false,
+        });
+      } catch (err) {
+        notify(title + (body ? ` — ${body}` : ""));
+        console.error("Global toast render failed:", err);
+      }
+    }
+
+    window.addEventListener("rjb:toast", onGlobalToast as EventListener);
+    return () => window.removeEventListener("rjb:toast", onGlobalToast as EventListener);
+  }, []);
+
+  useEffect(() => {
+    const freqSeconds = 8; // change frequency here if desired
+    let timer: number | null = null;
+
+    function uid() {
+      return Math.random().toString(36).slice(2, 9);
+    }
+    function nowIso() {
+      return new Date().toISOString();
+    }
+    function mapSeverity(confPct: number) {
+      if (confPct >= 90) return "critical";
+      if (confPct >= 80) return "high";
+      if (confPct >= 70) return "medium";
+      return "low";
+    }
+    function createMockAlert() {
+      const samples = [
+        "/assets/susp1.webp",
+        "/assets/susp2.webp",
+        "/assets/susp3.webp",
+        "/assets/susp4.webp",
+        "/assets/susp5.webp",
+        "/assets/susp6.webp",
+      ];
+      const snap = samples[Math.floor(Math.random() * samples.length)];
+
+      const confidence = +(0.6 + Math.random() * 0.4).toFixed(2);
+      const confPct = Math.round(confidence * 100);
+      const severity = mapSeverity(confPct);
+      const title = severity === "critical" ? "Intrusion detected" : severity === "high" ? "Suspicious activity" : "Motion detected";
+
+      const sourceName = ["Camera A1", "Gate Cam 2", "Perimeter 5"][Math.floor(Math.random() * 3)];
+      const location = ["Gate 1", "Inner Hall", "Perimeter Fence"][Math.floor(Math.random() * 3)];
+
+      return {
+        id: uid(),
+        title,
+        type: "vision",
+        severity,
+        confidence,
+        createdAt: nowIso(),
+        status: "new",
+        source: { name: sourceName, location, snapshotDataUrl: snap },
+        assignedTo: null,
+        notes: [],
+        reasoning: `Model confidence ${confPct}%`,
+      };
+    }
+
+    function loadAlertsLocal() {
+      try {
+        const raw = localStorage.getItem("rjb_alerts_v1");
+        return raw ? JSON.parse(raw) : [];
+      } catch {
+        return [];
+      }
+    }
+    function saveAlertsLocal(list: any[]) {
+      try {
+        localStorage.setItem("rjb_alerts_v1", JSON.stringify(list));
+      } catch (e) {
+        console.warn("saveAlertsLocal error", e);
+      }
+    }
+
+    function tick() {
+      try {
+        const a = createMockAlert();
+        const existing = loadAlertsLocal();
+        const updated = [a, ...existing].slice(0, 200);
+        saveAlertsLocal(updated);
+
+        const title = a.title;
+        const body = `${a.source.name ?? ""}${a.source.location ? " • " + a.source.location : ""}`;
+        window.dispatchEvent(new CustomEvent("rjb:toast", { detail: { title, body, alertId: a.id } }));
+
+        // optional: other listeners (badge counters, panel) can listen to this
+        window.dispatchEvent(new CustomEvent("rjb:new-alert", { detail: a }));
+      } catch (err) {
+        console.warn("alerts simulator tick error", err);
+      }
+    }
+
+    // start
+    tick();
+    timer = window.setInterval(tick, Math.max(500, freqSeconds * 1000));
+
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, []);
+
+  /* ---------- load user ---------- */
   useEffect(() => {
     const userDetails = JSON.parse(localStorage.getItem("userData") || "null");
     if (userDetails) setUserData(userDetails);
   }, []);
 
-  useEffect(()=>{
-    const timeout = setTimeout(()=>{
-      setNotifyMsg(notifyMsg !== "Suspisious Activities" ? 'Suspisious Activities': 'Devices Offline')
-      notify(notifyMsg !== "Suspisious Activities" ? 'Suspisious Activities': 'Devices Offline')
-    },5000)
-
-    return () => clearTimeout(timeout);
-  },[notifyMsg])
-
-  const pages = [
-    { label: "Dashboard", path: "/app/dashboard" },
+  /* ---------- search + pages ---------- */
+  const pages = [{ label: "Dashboard", path: "/app/dashboard" },
+     { label: "Analytics & Reports", path: "/app/analytics" },
+    { label: "AI Alerts", path: "/app/ai-alerts" },
+    { label: "Settings", path: "/app/settings" },
+    {label: "Vehicle Recognition", path: "/app/cctv-ai-feeds" },
+    { label: "Crowded People", path: "/app/crowded-people" },
+    { label: "Gate Pass & Visitors", path: "/app/gate-pass" },
+    { label: "Officers", path: "/app/officers" },
+    { label: "Officer Tracking", path: "/app/officers-track" },
   ];
 
   const handleSearch = (value: string) => {
@@ -98,17 +243,12 @@ const HeaderBar: React.FC = () => {
       return;
     }
 
-    const filtered = pages.filter((page) =>
-      page.label.toLowerCase().includes(noSpaces.toLowerCase())
-    );
-
+    const filtered = pages.filter((page) => page.label.toLowerCase().includes(noSpaces.toLowerCase()));
     setSearchSuggestions(filtered);
   };
 
   const handleSelect = (value: string) => {
-    const selected = pages.find(
-      (page) => page.label.toLowerCase() === value.toLowerCase()
-    );
+    const selected = pages.find((page) => page.label.toLowerCase() === value.toLowerCase());
     if (selected) {
       navigate(selected.path);
       setSearchValue("");
@@ -123,7 +263,7 @@ const HeaderBar: React.FC = () => {
     }
   };
 
-  // **Logout modal with custom color**
+  /* ---------- Logout modal ---------- */
   const handleLogout = () => {
     confirm({
       title: "Are you sure you want to log out?",
@@ -174,10 +314,10 @@ const HeaderBar: React.FC = () => {
         height: "64px",
         lineHeight: "64px",
         flexWrap: "wrap",
-        boxShadow: 'rgba(149, 157, 165, 0.2) 0px 8px 24px',
-        paddingBottom: '20px',
+        boxShadow: "rgba(149, 157, 165, 0.2) 0px 8px 24px",
+        paddingBottom: "20px",
         overflow: "hidden",
-        background:"#fff"
+        background: "#fff",
       }}
     >
       {/* Logo */}
@@ -203,22 +343,9 @@ const HeaderBar: React.FC = () => {
         >
           RJB Security Command
         </Text>
-        {/* {!screens.xs && (
-          <Text
-            style={{
-              fontSize: screens.lg ? 28 : 24,
-              fontWeight: 700,
-              // background: "linear-gradient(90deg, #0D9488, #14b8a6)",
-              WebkitBackgroundClip: "text",
-              color: "#0a3b5e",
-            }}
-          >
-            RJB Security Command
-          </Text>
-        )} */}
       </Space>
 
-      {/* Search  */}
+      {/* Search */}
       <Space size="middle" align="center">
         <AutoComplete
           options={searchSuggestions.map((item) => ({ value: item.label }))}
@@ -244,14 +371,11 @@ const HeaderBar: React.FC = () => {
             }}
           />
         </AutoComplete>
-
       </Space>
 
       {/* Notifications + Avatar */}
       <Space size="middle" align="center">
-        <BellOutlined
-          style={{ fontSize: 25, color: "#475569", cursor: "pointer" }}
-        />
+        <BellOutlined style={{ fontSize: 25, color: "#475569", cursor: "pointer" }} />
         <Dropdown overlay={userMenu} trigger={["click"]}>
           <Space
             style={{
@@ -275,7 +399,7 @@ const HeaderBar: React.FC = () => {
                   fontSize: screens.md ? 14 : 12,
                 }}
               >
-                {userData?.email?.split('@')[0] || "Admin User"}
+                {userData?.email?.split("@")[0] || "Admin User"}
               </Text>
               <Text type="secondary" style={{ fontSize: screens.md ? 12 : 10 }}>
                 police
@@ -284,13 +408,10 @@ const HeaderBar: React.FC = () => {
             <Avatar
               style={{
                 fontWeight: "bold",
-                border: "2px solid white"
+                border: "2px solid white",
               }}
             >
-              {(userData?.email
-                ? userData.email.charAt(0)
-                : "A"
-              ).toUpperCase()}
+              {(userData?.email ? userData.email.charAt(0) : "A").toUpperCase()}
             </Avatar>
           </Space>
         </Dropdown>

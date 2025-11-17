@@ -311,3 +311,33 @@
 
 /* Safety: prevent container overflow from hiding header/content */
 .rjb-gp-list-card, .rjb-gp-table-body { overflow:visible !important; }
+
+
+@media (max-width: 480px) {
+  .rjb-gp-modal {
+    padding: 14px;
+    max-width: 520px;
+  }
+
+  .rjb-gp-modal-actions .rjb-gp-button {
+    flex: 1 1 100%;
+  }
+
+  /* increase gap between stacked buttons */
+  .rjb-gp-modal-actions {
+    gap: 10px;
+  }
+}
+
+@media (max-width: 360px) {
+  .rjb-gp-modal {
+    padding: 12px 14px;
+    max-width: 340px;
+  }
+  .rjb-gp-modal-actions .rjb-gp-button {
+    min-width: 64px;
+    padding: 7px 10px;
+    height: 34px;
+    font-size: 13px;
+  }
+}
