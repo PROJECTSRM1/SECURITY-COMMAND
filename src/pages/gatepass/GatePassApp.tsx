@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode"; // default import (ESM)
 import { Avatar } from "antd";
 import { UserOutlined } from "@ant-design/icons";
-import "./GatePass.css";
+// import "./GatePass.css";
 import GatePassCard from "./GatePassCard";
 import VisitorPassCard from "./VisitorPassCard";
 

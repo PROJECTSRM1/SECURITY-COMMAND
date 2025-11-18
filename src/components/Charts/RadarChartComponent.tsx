@@ -36,6 +36,7 @@ const data = [
 // #endregion
 const RadarChartComponent = () => {
   return (
+    
     <RadarChart
       style={{ width: '100%', maxWidth: '500px', maxHeight: '80vh', aspectRatio: 1 }}
       responsive

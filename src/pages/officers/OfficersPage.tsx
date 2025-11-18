@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
-import "./OfficersPage.css";
 
+import { useEffect, useMemo, useState } from "react";
+// import "./OfficersPage.css";
+import { getAllUsers, createEmployee } from "../../api/users";
 type Officer = {
   id: string;
   name: string;
@@ -20,7 +21,6 @@ function nowIso() {
   return new Date().toISOString();
 }
 
-/* local persistence helpers */
 function loadOfficersLocal(): Officer[] {
   try {
     const raw = localStorage.getItem(LS_KEY);
@@ -38,7 +38,6 @@ function saveOfficersLocal(list: Officer[]) {
   }
 }
 
-/* read escalate minutes from settings (fallback default) */
 function loadEscalateHours(): number {
   try {
     const raw = localStorage.getItem(SETTINGS_LS);
@@ -50,9 +49,41 @@ function loadEscalateHours(): number {
   }
 }
 
-/* utility: generate a local id */
 function createLocalId() {
   return "local-" + Math.random().toString(36).slice(2, 9);
+}
+
+/* ----- Helper: map API user object -> Officer ------ 
+   Adjust mapping if your backend returns different field names.
+*/
+function mapApiToOfficer(apiObj: any): Officer {
+  // attempt typical fields, fallback to reasonable defaults
+  return {
+    id: String(apiObj.id ?? apiObj._id ?? createLocalId()),
+    name: apiObj.name ?? apiObj.fullName ?? apiObj.username ?? "Unknown",
+    badge: apiObj.badge ?? apiObj.employeeBadge ?? "",
+    phone: apiObj.phone ?? apiObj.mobile ?? "",
+    position: apiObj.position ?? apiObj.role ?? "",
+    imei: apiObj.imei ?? apiObj.deviceImei ?? "",
+    active: apiObj.active === undefined ? true : Boolean(apiObj.active),
+    lastSeen: apiObj.lastSeen ?? apiObj.updatedAt ?? nowIso(),
+    notes: apiObj.notes ?? apiObj.description ?? "",
+  };
+}
+
+/* ----- Helper: map Officer -> payload expected by createEmployee ----- 
+   Update keys if backend expects different names.
+*/
+function buildCreatePayload(o: Officer) {
+  return {
+    name: o.name,
+    badge: o.badge,
+    phone: o.phone,
+    position: o.position,
+    imei: o.imei,
+    notes: o.notes,
+    // add auth/tenant fields here if your API requires them
+  };
 }
 
 export default function OfficersPage() {
@@ -63,38 +94,53 @@ export default function OfficersPage() {
   const [showModal, setShowModal] = useState(false);
   const [selectedView, setSelectedView] = useState<Officer | null>(null);
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [nowTick, setNowTick] = useState(Date.now());
   const escalateIfOfflineHours = useMemo(() => loadEscalateHours(), [nowTick]);
 
-  // for pure local mode we load from localStorage on mount
   useEffect(() => {
-    setLoading(true);
-    const local = loadOfficersLocal();
-    setOfficers(local);
-    setLoading(false);
+    // Try to load from API, fallback to local storage on error.
+    fetchFromApi();
+    // tick to update online/offline state
+    const t = setInterval(() => setNowTick(Date.now()), 30_000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // persist whenever officers change
+  async function fetchFromApi() {
+    setLoading(true);
+    try {
+      const data = await getAllUsers();
+      // API might return array directly or { users: [...] }
+      const listRaw = Array.isArray(data) ? data : data?.users ?? data?.data ?? [];
+      const mapped = listRaw.map(mapApiToOfficer);
+      setOfficers(mapped);
+      saveOfficersLocal(mapped);
+    } catch (err) {
+      console.warn("getAllUsers failed, falling back to local:", err);
+      // keep local storage contents (already in state)
+      const local = loadOfficersLocal();
+      setOfficers(local);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
+    // persist whenever officers change (local mirror)
     saveOfficersLocal(officers);
   }, [officers]);
 
-  // tick to update online/offline status
-  useEffect(() => {
-    const t = setInterval(() => setNowTick(Date.now()), 30_000);
-    return () => clearInterval(t);
-  }, []);
-
-  // ---- FIXED: compare in HOURS, not minutes ----
   function isOnline(o: Officer) {
     const last = new Date(o.lastSeen).getTime();
-    const diffHours = (Date.now() - last) / 1000 / 60 / 60; // hours
+    const diffHours = (Date.now() - last) / 1000 / 60 / 60;
     return diffHours <= escalateIfOfflineHours;
   }
 
   const visible = officers.filter((o) => {
     const q = query.trim().toLowerCase();
-    if (q && !(o.name.toLowerCase().includes(q) || (o.badge || "").toLowerCase().includes(q) || (o.phone || "").includes(q) || (o.position || "").toLowerCase().includes(q))) return false;
+    if (q && !(o.name.toLowerCase().includes(q) || (o.badge || "").toLowerCase().includes(q) || (o.phone || "").includes(q) || (o.position || "").toLowerCase().includes(q)))
+      return false;
     if (filter === "online") return isOnline(o);
     if (filter === "offline") return !isOnline(o);
     return true;
@@ -120,32 +166,62 @@ export default function OfficersPage() {
     setShowModal(true);
   }
 
-  function handleSaveEdited(o: Officer) {
-    // new
+  async function handleSaveEdited(o: Officer) {
+    // If new -> try API create first, fallback to local
     if (o.id === "new") {
-      const newOfficer: Officer = {
-        ...o,
-        id: createLocalId(),
-        lastSeen: o.lastSeen || nowIso(),
-      };
-      setOfficers((s) => [newOfficer, ...s]);
-      saveOfficersLocal([newOfficer, ...officers]);
-      console.log("Created officer locally:", newOfficer);
+      setSaving(true);
+      try {
+        const payload = buildCreatePayload(o);
+        // attempt API call
+        const resp = await createEmployee(payload);
+        // If server returns created object, map it in. Otherwise, re-fetch list.
+        if (resp) {
+          // some apis return created item, some return success boolean. Handle both:
+          // If resp is object and contains fields -> prefer mapping and inserting
+          if (typeof resp === "object" && (resp.id || resp._id || resp.name)) {
+            const created = mapApiToOfficer(resp);
+            setOfficers((s) => [created, ...s]);
+            saveOfficersLocal([created, ...officers]);
+          } else {
+            // re-fetch full list from server (most robust)
+            await fetchFromApi();
+          }
+          alert("Officer added (server).");
+        } else {
+          // fallback: save locally
+          const newOfficer: Officer = { ...o, id: createLocalId(), lastSeen: o.lastSeen || nowIso() };
+          setOfficers((s) => [newOfficer, ...s]);
+          saveOfficersLocal([newOfficer, ...officers]);
+          alert("Officer saved locally (server returned empty).");
+        }
+      } catch (err) {
+        console.warn("createEmployee failed, saving locally", err);
+        // fallback to local create
+        const newOfficer: Officer = { ...o, id: createLocalId(), lastSeen: o.lastSeen || nowIso() };
+        setOfficers((s) => [newOfficer, ...s]);
+        saveOfficersLocal([newOfficer, ...officers]);
+        alert("Server unavailable — officer saved locally.");
+      } finally {
+        setSaving(false);
+      }
     } else {
-      // update existing
+      // update existing locally; optionally you can call an update API if exists
       setOfficers((s) => {
         const updated = s.map((it) => (it.id === o.id ? { ...it, ...o } : it));
         saveOfficersLocal(updated);
         return updated;
       });
-      console.log("Updated officer locally:", o);
+      // TODO: if you have an update API, call it here
+      alert("Officer updated locally.");
     }
+
     setShowModal(false);
     setEditing(null);
   }
 
   function handleDelete(id: string) {
     if (!confirm("Delete officer?")) return;
+    // If you have a delete API, call it here; for now just local delete + persist
     const updated = officers.filter((x) => x.id !== id);
     setOfficers(updated);
     saveOfficersLocal(updated);
@@ -158,7 +234,6 @@ export default function OfficersPage() {
       saveOfficersLocal(newList);
       return newList;
     });
-    console.log("Ping — updated lastSeen locally for", o.id);
   }
 
   function exportCsv() {
@@ -187,7 +262,6 @@ export default function OfficersPage() {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-    console.log("Exported CSV for officers.");
   }
 
   return (
@@ -213,7 +287,6 @@ export default function OfficersPage() {
 
             <button className="rjb-ops-btn" onClick={handleAddNew}>Add Officer</button>
             <button className="rjb-ops-btn rjb-ops-btn-ghost" onClick={exportCsv}>Export CSV</button>
-            
           </div>
         </div>
 
@@ -226,7 +299,6 @@ export default function OfficersPage() {
             visible.map((o) => {
               const online = isOnline(o);
 
-              // compute a friendly 'last seen' label (minutes / hours / days)
               const diffMs = Date.now() - new Date(o.lastSeen).getTime();
               const lastAgoMin = Math.round(diffMs / 1000 / 60);
               let lastAgoLabel = "just now";
@@ -273,6 +345,7 @@ export default function OfficersPage() {
           officer={editing}
           onClose={() => { setShowModal(false); setEditing(null); }}
           onSave={(o) => handleSaveEdited(o)}
+          saving={saving}
         />
       )}
 
@@ -299,7 +372,7 @@ export default function OfficersPage() {
 }
 
 /* Officer modal component (small, local to file) */
-function OfficerModal({ officer, onClose, onSave }: { officer: Officer; onClose: () => void; onSave: (o: Officer) => void }) {
+function OfficerModal({ officer, onClose, onSave, saving }: { officer: Officer; onClose: () => void; onSave: (o: Officer) => void; saving?: boolean }) {
   const [local, setLocal] = useState<Officer>(officer);
 
   useEffect(() => setLocal(officer), [officer]);
@@ -345,8 +418,8 @@ function OfficerModal({ officer, onClose, onSave }: { officer: Officer; onClose:
         <textarea className="rjb-ops-textarea" value={local.notes || ""} onChange={(e) => setField("notes", e.target.value)} />
 
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
-          <button className="rjb-ops-btn rjb-ops-btn-ghost" onClick={onClose}>Cancel</button>
-          <button className="rjb-ops-btn" onClick={save}>{officer.id === "new" ? "Add" : "Save"}</button>
+          <button className="rjb-ops-btn rjb-ops-btn-ghost" onClick={onClose} disabled={saving}>Cancel</button>
+          <button className="rjb-ops-btn" onClick={save} disabled={saving}>{saving ? "Saving..." : (officer.id === "new" ? "Add" : "Save")}</button>
         </div>
       </div>
     </div>

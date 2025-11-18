@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Drawer } from "antd";
-import "./CrowdedPeople.css";
+// import "./CrowdedPeople.css";
 import CctvAiFeeds from "../anpr/CctvAiFeeds"; // adjust path if needed
 
 const feeds = [

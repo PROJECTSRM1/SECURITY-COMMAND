@@ -12,7 +12,7 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import "./AnalyticsReports.css";
+// import "./AnalyticsReports.css";
 
 
 
@@ -310,43 +310,46 @@ export default function AnalyticsReports() {
       </section>
 
       <section className="rjb-ar-charts">
-        <div className="rjb-chart-card">
-          <h4>Daily — Visitors vs Alerts</h4>
-          <div style={{ height: 260 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={timeSeries} margin={{ left: 0, right: 10, top: 10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="visitors" stroke="#2563eb" dot={false} />
-                <Line type="monotone" dataKey="alerts" stroke="#ef4444" dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
 
-        <div className="rjb-chart-card">
-          <h4>Alerts by Severity</h4>
-          <div style={{ height: 260, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            {pieData.length ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={pieData} dataKey="value" nameKey="name" outerRadius={80} label>
-                    {pieData.map((entry, idx) => (
-                      <Cell key={entry.key} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="rjb-empty">No alerts in range</div>
-            )}
-          </div>
-        </div>
-      </section>
+  <div className="rjb-chart-card rjb-chart-line">
+    <h4>Daily — Visitors vs Alerts</h4>
+    <div className="rjb-chart-area">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={timeSeries} margin={{ left: 0, right: 10, top: 10, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="date" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Line type="monotone" dataKey="visitors" stroke="#2563eb" dot={false} />
+          <Line type="monotone" dataKey="alerts" stroke="#ef4444" dot={false} />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  </div>
+
+  <div className="rjb-chart-card rjb-chart-pie">
+    <h4>Alerts by Severity</h4>
+    <div className="rjb-chart-area rjb-chart-center">
+      {pieData.length ? (
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie data={pieData} dataKey="value" nameKey="name" outerRadius={80} label>
+              {pieData.map((entry, idx) => (
+                <Cell key={entry.key} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip />
+          </PieChart>
+        </ResponsiveContainer>
+      ) : (
+        <div className="rjb-empty">No alerts in range</div>
+      )}
+    </div>
+  </div>
+
+</section>
+
 
       <section className="rjb-ar-table-card">
         <div className="rjb-table-head">
