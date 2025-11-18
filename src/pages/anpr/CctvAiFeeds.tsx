@@ -1,7 +1,7 @@
 // src/pages/anpr/CctvAiFeeds.tsx
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import "./CctvAiFeeds.css";
+// import "./CctvAiFeeds.css";
 
 type Props = {
   camlink?: string;

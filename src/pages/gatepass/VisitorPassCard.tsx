@@ -1,6 +1,6 @@
 
 import React from "react";
-import "./GateVisitorPass.css";
+// import "./GateVisitorPass.css";  
 
 type EntryProps = {
   entry: {

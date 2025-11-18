@@ -1,6 +1,5 @@
-
 import { useEffect, useRef, useState } from "react";
-import "./SettingsPage.css";
+// import "./SettingsPage.css";
 
 type Schema = {
   aiAlerts: {
@@ -27,7 +26,7 @@ const DEFAULT: Schema = {
     crowdMinDuration: 30,
     vehicleConfidence: 85,
     personConfidence: 70,
-    toastNotifications: true, 
+    toastNotifications: true,    
   },
   officerTracking: {
     enabled: true,

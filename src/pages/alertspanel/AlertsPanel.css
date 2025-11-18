@@ -1,7 +1,4 @@
-
-:root {
-  --app-header-height: 72px; 
-}
+/* Alerts Panel CSS */
 
 .rjb-alerts-panel {
   min-height: calc(100vh - var(--app-header-height));
@@ -543,3 +540,63 @@
 }
 
 
+/* ---------- ALIGN SEARCH + SELECTS (desktop + mobile) ---------- */
+/* Ensure consistent box-sizing and vertical centering for inputs/selects */
+.rjb-alerts-filters,
+.rjb-alerts-filters * {
+  box-sizing: border-box;
+}
+
+/* Make search and selects exactly the same height and vertically centered */
+.rjb-alerts-filters .rjb-search,
+.rjb-alerts-filters .rjb-select {
+  height: 40px;                /* consistent control height */
+  line-height: 1;              /* avoid text clipping */
+  display: inline-flex;
+  align-items: center;         /* vertically center text & arrow */
+  padding: 0 10px;             /* left/right padding */
+  font-size: 14px;
+  border-radius: 8px;
+}
+
+
+/* Keep search flexible */
+.rjb-alerts-filters .rjb-search {
+  padding-left: 12px;
+  padding-right: 12px;
+  flex: 1;
+  min-width: 0; 
+}
+
+.rjb-alerts-filters .rjb-select:last-of-type {
+  width: 72px;
+  min-width: 64px;
+  padding-left: 10px;
+  padding-right: 34px; /* allow arrow room */
+  text-align: center;
+}
+
+.rjb-alerts-filters .rjb-select:nth-of-type(2) {
+  width: 110px;
+  min-width: 90px;
+}
+
+@media only screen and (max-width: 768px) {
+  .rjb-alerts-filters .rjb-search,
+  .rjb-alerts-filters .rjb-select {
+    height: 42px;
+    font-size: 15px;
+  }
+
+  .rjb-alerts-filters .rjb-select:last-of-type {
+    width: 68px;
+    min-width: 64px;
+  }
+
+  .rjb-alerts-filters .rjb-select:nth-of-type(2) {
+    width: 96px;
+    min-width: 84px;
+  }
+}
+
+.rjb-alerts-filters { gap: 10px; padding-right: 6px; }

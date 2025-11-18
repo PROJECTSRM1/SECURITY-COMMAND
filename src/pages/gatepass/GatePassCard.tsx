@@ -1,5 +1,5 @@
 import React from "react";
-import "./GateVisitorPass.css";
+// import "./GateVisitorPass.css";
 import ayodhyaLogo from "../../assets/ayodhya-logo.png"; 
 
 type EntryProps = {

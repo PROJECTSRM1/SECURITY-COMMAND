@@ -1,5 +1,6 @@
+
 import { useEffect, useMemo, useRef, useState } from "react";
-import "./AlertsPanel.css";
+// import "./AlertsPanel.css";
 
 import snap1 from "../../assets/susp1.webp";
 import snap2 from "../../assets/susp2.webp";
@@ -63,7 +64,6 @@ export default function AlertsPanel() {
 
   const [, setSettings] = useState<any>(() => loadSettings());
 
-
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filter, setFilter] = useState<{ severity: "all" | Severity; status: "all" | Status; q: string }>({
     severity: "all",
@@ -86,13 +86,19 @@ export default function AlertsPanel() {
     receivedIdsRef.current = new Set(alerts.map((a) => a.id));
   }, [alerts]);
 
+  /* ---------- NEW: refs to list items so we can scroll selected into view ---------- */
+  const itemRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
+  // optional: ref to the whole list container (if you want to scroll container)
+  const listContainerRef = useRef<HTMLDivElement | null>(null);
+  // optional: ref to detail panel (if you want to scroll that into view on mobile)
+  const detailRef = useRef<HTMLDivElement | null>(null);
 
   function mapSnapshotUrl(url?: string | null) {
     if (!url) return null;
-  
+
     try {
       const fname = url.split("/").pop() || url;
-      
+
       for (const s of SNAP_SAMPLES) {
         const sName = (s as unknown as string).split("/").pop();
         if (sName && fname && sName.includes(fname.replace(/^\/+/, ""))) {
@@ -100,6 +106,7 @@ export default function AlertsPanel() {
         }
       }
     } catch {
+      // ignore
     }
   }
   useEffect(() => {
@@ -154,7 +161,7 @@ export default function AlertsPanel() {
       window.removeEventListener("rjb:new-alert", onNewAlert as EventListener);
       window.removeEventListener("storage", onStorage as EventListener);
     };
-  }, []); 
+  }, []);
   useEffect(() => {
     if (!alerts || alerts.length === 0) return;
     const missing = alerts.filter((a) => !a.source?.snapshotDataUrl);
@@ -167,7 +174,7 @@ export default function AlertsPanel() {
         return { ...a, source: { ...a.source, snapshotDataUrl: snap } };
       })
     );
-  }, []); 
+  }, []);
 
   /* ---------- Update & helpers ---------- */
   function updateAlert(id: string, patch: Partial<AlertRecord>) {
@@ -192,7 +199,10 @@ export default function AlertsPanel() {
     return alerts.filter((a) => {
       if (filter.severity !== "all" && a.severity !== filter.severity) return false;
       if (filter.status !== "all" && a.status !== filter.status) return false;
-      if (filter.q && !(`${a.title} ${a.type} ${a.source.name} ${a.source.location}`.toLowerCase().includes(filter.q.toLowerCase())))
+      if (
+        filter.q &&
+        !(`${a.title} ${a.type} ${a.source.name} ${a.source.location}`.toLowerCase().includes(filter.q.toLowerCase()))
+      )
         return false;
       return true;
     });
@@ -223,6 +233,25 @@ export default function AlertsPanel() {
     if (r) r(result);
   }
 
+  /* ---------- NEW: scroll selected into view on mobile ---------- */
+useEffect(() => {
+  if (!selectedId) return;
+
+  // Mobile only
+  if (window.innerWidth > 768) return;
+
+  // Scroll to the TOP of the detail card only
+  const detailCard = document.querySelector(".rjb-detail-card");
+
+  if (detailCard) {
+    detailCard.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }
+}, [selectedId]);
+
+
   /* ---------- Render ---------- */
   return (
     <div className="rjb-alerts-panel">
@@ -251,12 +280,17 @@ export default function AlertsPanel() {
           </select>
         </div>
 
-        <div className="rjb-alerts-list-body">
+        <div className="rjb-alerts-list-body" ref={listContainerRef}>
           {filtered.length === 0 && <div className="rjb-empty">No alerts — waiting for events...</div>}
 
           {filtered.map((a) => (
             <div
               key={a.id}
+              // ---------- NOTE: set a ref for each item so we can scroll to it ----------
+              ref={(el) => {
+                // keep map in sync; set null if element unmounted
+                itemRefs.current.set(a.id, el);
+              }}
               className={`rjb-alert-item ${selectedId === a.id ? "selected" : ""}`}
               onClick={() => setSelectedId(a.id)}
             >
@@ -312,7 +346,7 @@ export default function AlertsPanel() {
         </div>
       </div>
 
-      <div className="rjb-alerts-detail">
+      <div className="rjb-alerts-detail" /* optional ref to scroll detail into view */ ref={detailRef}>
         {selected ? (
           <div className="rjb-detail-card">
             <div className="rjb-detail-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
