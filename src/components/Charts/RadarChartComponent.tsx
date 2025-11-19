@@ -34,11 +34,29 @@ const data = [
 ];
 
 // #endregion
+// const RadarChartComponent = () => {
+//   return (
+    
+//     <RadarChart
+//       style={{ width: '100%', maxWidth: '500px', maxHeight: '80vh', aspectRatio: 1 }}
+//       responsive
+//       outerRadius="80%"
+//       data={data}
+//     >
+//       <PolarGrid />
+//       <PolarAngleAxis dataKey="subject" />
+//       <PolarRadiusAxis angle={30} domain={[0, 150]} />
+//       <Radar name="Crowd" dataKey="A" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+//       <Radar name="Officers/Cams" dataKey="B" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.6} />
+//       <Legend />
+//     </RadarChart>
+//   );
+// };
+
 const RadarChartComponent = () => {
   return (
-    
     <RadarChart
-      style={{ width: '100%', maxWidth: '500px', maxHeight: '80vh', aspectRatio: 1 }}
+      className="rjb-radar-chart"
       responsive
       outerRadius="80%"
       data={data}
@@ -52,5 +70,6 @@ const RadarChartComponent = () => {
     </RadarChart>
   );
 };
+
 
 export default RadarChartComponent;

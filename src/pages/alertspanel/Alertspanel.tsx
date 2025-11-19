@@ -50,17 +50,68 @@ function loadSettings() {
   }
 }
 
+/* ---------- Stronger snapshot mapper ---------- */
+function mapSnapshotUrl(url?: string | null) {
+  if (!url) return null;
+
+  try {
+    const asStr = String(url).trim();
+
+    // if it's already an absolute URL (http(s): or data:) just return it
+    if (/^(data:|https?:\/\/)/i.test(asStr)) return asStr;
+
+    // Normalize candidate filename (remove query/hash, leading slash)
+    const fnameRaw = asStr.split(/[?#]/)[0].split("/").pop() || asStr;
+    const fname = fnameRaw.replace(/^\/+/, "").toLowerCase();
+    const stripExt = (s: string) => s.replace(/\.[^/.]+$/, "").toLowerCase();
+    const fnameBase = stripExt(fname);
+
+    for (const s of SNAP_SAMPLES) {
+      const sPath = String(s);
+      const sName = sPath.split("/").pop() || sPath;
+      const sBase = stripExt(sName);
+
+      // exact base match (best)
+      if (sBase === fnameBase) return s;
+
+      // if imported string contains the original filename (handles hashed imports)
+      if (sPath.toLowerCase().includes(fname)) return s;
+
+      // if filename endsWith (some bundlers)
+      if (sName.toLowerCase().endsWith(fname)) return s;
+    }
+
+    // As a last-ditch, if the stored value looks like '/assets/susp1.webp', try prefixing with location.origin + that path
+    if (asStr.startsWith("/")) {
+      const tryUrl = window.location.origin + asStr;
+      return tryUrl;
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/* ---------- Load & map stored alerts helper ---------- */
+function loadAndMapStoredAlerts(): AlertRecord[] {
+  try {
+    const raw = localStorage.getItem(LS);
+    const list: AlertRecord[] = raw ? JSON.parse(raw) : [];
+    const mapped = list.map((a) => {
+      const mappedSnap = mapSnapshotUrl(a.source?.snapshotDataUrl as any) ?? a.source?.snapshotDataUrl ?? null;
+      return { ...a, source: { ...a.source, snapshotDataUrl: mappedSnap } };
+    });
+    return mapped;
+  } catch {
+    return [];
+  }
+}
+
 /* ---------- Component ---------- */
 export default function AlertsPanel() {
-  // load alerts from localStorage initially
-  const [alerts, setAlerts] = useState<AlertRecord[]>(() => {
-    try {
-      const raw = localStorage.getItem(LS);
-      return raw ? (JSON.parse(raw) as AlertRecord[]) : [];
-    } catch {
-      return [];
-    }
-  });
+  // load alerts from localStorage initially (mapped)
+  const [alerts, setAlerts] = useState<AlertRecord[]>(() => loadAndMapStoredAlerts());
 
   const [, setSettings] = useState<any>(() => loadSettings());
 
@@ -93,22 +144,6 @@ export default function AlertsPanel() {
   // optional: ref to detail panel (if you want to scroll that into view on mobile)
   const detailRef = useRef<HTMLDivElement | null>(null);
 
-  function mapSnapshotUrl(url?: string | null) {
-    if (!url) return null;
-
-    try {
-      const fname = url.split("/").pop() || url;
-
-      for (const s of SNAP_SAMPLES) {
-        const sName = (s as unknown as string).split("/").pop();
-        if (sName && fname && sName.includes(fname.replace(/^\/+/, ""))) {
-          return s; // return the imported module path
-        }
-      }
-    } catch {
-      // ignore
-    }
-  }
   useEffect(() => {
     function onNewAlert(e: Event) {
       const detail = (e as CustomEvent).detail;
@@ -140,7 +175,10 @@ export default function AlertsPanel() {
           const list: AlertRecord[] = raw ? JSON.parse(raw) : [];
           const mapped = list.map((a) => ({
             ...a,
-            source: { ...a.source, snapshotDataUrl: mapSnapshotUrl(a.source?.snapshotDataUrl as any) ?? a.source?.snapshotDataUrl ?? null },
+            source: {
+              ...a.source,
+              snapshotDataUrl: mapSnapshotUrl(a.source?.snapshotDataUrl as any) ?? a.source?.snapshotDataUrl ?? null,
+            },
           }));
           setAlerts(mapped);
         } catch {
@@ -162,6 +200,8 @@ export default function AlertsPanel() {
       window.removeEventListener("storage", onStorage as EventListener);
     };
   }, []);
+
+  /* ---------- RUN whenever alerts change: fill missing snapshots with random sample ---------- */
   useEffect(() => {
     if (!alerts || alerts.length === 0) return;
     const missing = alerts.filter((a) => !a.source?.snapshotDataUrl);
@@ -174,7 +214,22 @@ export default function AlertsPanel() {
         return { ...a, source: { ...a.source, snapshotDataUrl: snap } };
       })
     );
-  }, []);
+  }, [alerts]);
+
+  /* ---------- Debug: show snapshotDataUrl samples in console (remove when happy) ---------- */
+  useEffect(() => {
+    try {
+      console.group("[Alerts Debug] snapshotDataUrl check");
+      console.log("total alerts:", alerts.length);
+      const samples = alerts.slice(0, 12).map((a) => ({ id: a.id, src: a.source?.snapshotDataUrl }));
+      console.table(samples);
+      const nullCount = alerts.filter((a) => !a.source?.snapshotDataUrl).length;
+      console.log("missing snapshotDataUrl:", nullCount);
+      console.groupEnd();
+    } catch {
+      // ignore
+    }
+  }, [alerts]);
 
   /* ---------- Update & helpers ---------- */
   function updateAlert(id: string, patch: Partial<AlertRecord>) {
@@ -234,23 +289,22 @@ export default function AlertsPanel() {
   }
 
   /* ---------- NEW: scroll selected into view on mobile ---------- */
-useEffect(() => {
-  if (!selectedId) return;
+  useEffect(() => {
+    if (!selectedId) return;
 
-  // Mobile only
-  if (window.innerWidth > 768) return;
+    // Mobile only
+    if (window.innerWidth > 768) return;
 
-  // Scroll to the TOP of the detail card only
-  const detailCard = document.querySelector(".rjb-detail-card");
+    // Scroll to the TOP of the detail card only
+    const detailCard = document.querySelector(".rjb-detail-card");
 
-  if (detailCard) {
-    detailCard.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  }
-}, [selectedId]);
-
+    if (detailCard) {
+      detailCard.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [selectedId]);
 
   /* ---------- Render ---------- */
   return (
@@ -349,7 +403,7 @@ useEffect(() => {
       <div className="rjb-alerts-detail" /* optional ref to scroll detail into view */ ref={detailRef}>
         {selected ? (
           <div className="rjb-detail-card">
-            <div className="rjb-detail-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div className="rjb-detail-header rjb-detail-header-flex">
               <div>
                 <h3 className="rjb-detail-title">{selected.title}</h3>
                 <div className="rjb-detail-sub">{selected.source.name} • {selected.source.location}</div>
@@ -364,7 +418,19 @@ useEffect(() => {
             <div className="rjb-detail-body">
               <div className="rjb-media">
                 {selected.source.snapshotDataUrl ? (
-                  <img src={selected.source.snapshotDataUrl as any} alt="snapshot" />
+                  <img
+                    src={selected.source.snapshotDataUrl as any}
+                    alt="snapshot"
+                    onError={(e) => {
+                      const img = e.currentTarget as HTMLImageElement;
+                      // avoid infinite loop: mark fallback once
+                      if (!img.dataset.fallback) {
+                        img.dataset.fallback = "1";
+                        const snap = SNAP_SAMPLES[Math.floor(Math.random() * SNAP_SAMPLES.length)];
+                        img.src = snap;
+                      }
+                    }}
+                  />
                 ) : (
                   <div className="rjb-media-empty">No snapshot</div>
                 )}

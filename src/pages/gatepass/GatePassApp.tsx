@@ -377,7 +377,7 @@ export default function GatePassApp() {
 
   return (
     <div className="rjb-gp-app">
-      <div style={{ display: "none" }}>
+      <div className="rjb-print-hidden">
         <div ref={printRef}>
           {currentPassType === "Gate Pass" && currentEntry && (
             <GatePassCard entry={currentEntry} qrDataUrl={qrDataUrl} />
@@ -536,7 +536,7 @@ export default function GatePassApp() {
                         size={44}
                         src={v.photoDataUrl || undefined}
                         icon={!v.photoDataUrl ? <UserOutlined /> : undefined}
-                        style={{ backgroundColor: v.photoDataUrl ? "#ffffff" : "#bfbfbf" }}
+                        className={v.photoDataUrl ? "rjb-avatar-has-img" : "rjb-avatar-no-img"}
                       />
                     </div>
                   </div>

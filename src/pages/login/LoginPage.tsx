@@ -67,15 +67,9 @@ const Login: React.FC = () => {
             name="remember"
             valuePropName="checked"
             initialValue={false}
-            style={{ marginBottom: 0 }}
+             className="rjb-form-remember-item"
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
+           <div className="rjb-remember-row">
               <Checkbox className="rjb-checkbox" >Remember me</Checkbox>
               <Text className="rjb-login-forgotpassword-txt"
               >
@@ -84,7 +78,7 @@ const Login: React.FC = () => {
             </div>
           </Form.Item>
 
-          <Form.Item style={{ marginTop: 24, marginBottom: 12 }}>
+          <Form.Item  className="rjb-form-submit-item">
             <ButtonDynamic bttnType="primary" bttnHtmlType="submit" bttnTitle="Sign In" />
           </Form.Item>
 

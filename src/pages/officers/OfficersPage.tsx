@@ -358,12 +358,14 @@ export default function OfficersPage() {
               <div><strong>Phone:</strong> {selectedView.phone || "—"}</div>
               <div><strong>Position:</strong> {selectedView.position || "—"}</div>
               <div><strong>IMEI:</strong> {selectedView.imei || "—"}</div>
-              <div style={{ marginTop: 12 }}>This area can be used for more details later.</div>
             </div>
 
-            <div style={{ marginTop: 12, textAlign: "right" }}>
-              <button className="rjb-ops-btn" onClick={() => setSelectedView(null)}>Close</button>
-            </div>
+ <div className="rjb-ops-close-wrap">
+  <button className="rjb-ops-btn" onClick={() => setSelectedView(null)}>
+    Close
+  </button>
+</div>
+
           </div>
         </div>
       )}
@@ -417,7 +419,7 @@ function OfficerModal({ officer, onClose, onSave, saving }: { officer: Officer; 
         <label className="rjb-ops-label">Notes</label>
         <textarea className="rjb-ops-textarea" value={local.notes || ""} onChange={(e) => setField("notes", e.target.value)} />
 
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
+        <div  className="rjb-ops-actions">
           <button className="rjb-ops-btn rjb-ops-btn-ghost" onClick={onClose} disabled={saving}>Cancel</button>
           <button className="rjb-ops-btn" onClick={save} disabled={saving}>{saving ? "Saving..." : (officer.id === "new" ? "Add" : "Save")}</button>
         </div>

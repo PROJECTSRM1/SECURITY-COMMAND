@@ -9,9 +9,9 @@ const twoColors: ProgressProps['strokeColor'] = {
 
 const ProgressBarsComponent = ({ title, value }: { title: string; value: number }) => {
   return (
-  <div style={{display:'flex',flexDirection:'column',alignItems:'center'}}>
+  <div className="rjb-progress-wrapper">
     <Progress type="circle" percent={value} strokeColor={twoColors} />
-    <strong style={{marginTop:10}}>{title}</strong>
+    <strong className="rjb-progress-title">{title}</strong>
   </div>
 
 )};

@@ -22,12 +22,12 @@ const CrowdedPeople: React.FC = () => {
 
   const closeDrawer = () => {
     setDrawerOpen(false);
-    // keep selectedFeed if you need it; we can clear it to free memory
+    // clear after close to free memory
     setTimeout(() => setSelectedFeed(null), 300);
   };
 
   return (
-    <div>
+    <div className="rjb-crowd-page">
       <div className="rjb-crowd-grid-container">
         {feeds.map((feed) => (
           <div
@@ -45,18 +45,18 @@ const CrowdedPeople: React.FC = () => {
       </div>
 
       <Drawer
+        className="rjb-drawer-wrap"
         title={selectedFeed?.label ?? "Camera Feed"}
         placement="right"
-        // width={"70%"}
-        width={window.innerWidth < 600 ? "100%" : "70%"}
+        width={800}            /* default desktop width - CSS overrides it responsively */
         onClose={closeDrawer}
         open={drawerOpen}
-        bodyStyle={{ padding: 0, height: "100%" }}
-        destroyOnClose={true} // unmount to reset timers inside CctvAiFeeds when closed
+        destroyOnClose={true}
       >
+        {/* drawer body must use a CSS class that provides full-height layout */}
         {selectedFeed ? (
-          // Render CctvAiFeeds in-drawer. showPeople true because this is crowded people page.
-          <div style={{ height: "100%", overflow: "hidden" }}>
+          <div className="rjb-drawer-inner">
+            {/* CctvAiFeeds should itself be height-aware and stretch to fill parent */}
             <CctvAiFeeds camlink={selectedFeed.camlink} title={selectedFeed.label} showPeople={true} />
           </div>
         ) : null}
