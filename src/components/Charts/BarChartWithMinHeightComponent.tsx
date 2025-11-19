@@ -56,7 +56,7 @@ const renderCustomizedLabel = (props: LabelProps) => {
 const BarChartWithMinHeightComponent = () => {
   return (
     <BarChart
-      style={{ width: '100%', maxWidth: '700px', maxHeight: '70vh', aspectRatio: 1.618 }}
+      className="rjb-bar-chart"
       responsive
       data={data}
       margin={{

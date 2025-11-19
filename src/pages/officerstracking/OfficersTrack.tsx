@@ -10,14 +10,13 @@ import Sideheadings from '../../components/header/sideheadings/sideheadings';
 
 function OfficersTrack() {
     return (
-        <div style={{padding:20}}>
+        <div className="rjb-track-page-wrap">
             <Row justify={"space-between"}>
 
                 <Col
                     xs={{ flex: '100%' }}
                     md={{ flex: '70%' }}
-                    style={{ marginTop: "20px", }}
-                    className='rjb-header-cards'
+                    className="rjb-header-cards rjb-track-col"
                 >
                     <Sideheadings title='Officers Track' />
                     <MapsComponent />
@@ -28,8 +27,7 @@ function OfficersTrack() {
                     sm={{ flex: '50%' }}
                     md={{ flex: '40%' }}
                     lg={{ flex: '28%' }}
-                    style={{ marginTop: "20px", }}
-                    className='rjb-header-cards'
+                    className="rjb-header-cards rjb-track-col"
                 >
                     <Sideheadings title="Rosters Summary" />
                     <TableComponent />

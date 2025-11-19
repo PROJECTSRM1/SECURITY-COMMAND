@@ -1,9 +1,5 @@
-// src/api/users.ts
 import { baseUrl } from "../utils/constants/config";
 
-/**
- * Helper: safe fetch with timeout to detect backend unreachable quickly.
- */
 async function safeFetch(input: RequestInfo, init?: RequestInit, timeoutMs = 8000) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
@@ -38,7 +34,6 @@ export const getAllUsers = async () => {
       const r = await safeFetch(fallbackUrl, { method: "GET" }, 7000);
       if (!r.ok) throw new Error(`Fallback HTTP ${r.status}`);
       const d = await r.json();
-      // return the shape your UI expects (array or object). We return the raw fallback so caller can handle mapping.
       return d;
     } catch (fallbackErr) {
       console.warn("[api] getAllUsers -> dummyjson failed, trying jsonplaceholder", fallbackErr);
@@ -51,12 +46,7 @@ export const getAllUsers = async () => {
   }
 };
 
-/**
- * createEmployee:
- * - Try your real API POST /User/createemployee
- * - If it fails, POST to jsonplaceholder.typicode.com/posts (or dummyjson) so DevTools displays a POST
- * - Return the fallback response so UI can behave as if a server returned a created item.
- */
+
 export const createEmployee = async (empData: any) => {
   const realUrl = `${baseUrl}/User/createemployee`;
 
@@ -83,7 +73,6 @@ export const createEmployee = async (empData: any) => {
     console.warn("[api] createEmployee -> backend failed, posting to fallback test API", err);
 
     // Fallback: jsonplaceholder supports POST and returns created object { id: ... }
-    // This will create a visible POST entry in DevTools Network
     try {
       const fallbackUrl = "https://jsonplaceholder.typicode.com/posts";
       console.log("[api] createEmployee -> posting to fallback", fallbackUrl, empData);
@@ -99,7 +88,6 @@ export const createEmployee = async (empData: any) => {
       }
 
       const d = await r.json();
-      // jsonplaceholder returns { id: 101 } for example. We can synthesize fields so app has something meaningful:
       const synthesized = {
         ...empData,
         id: d.id ?? `fake-${Math.random().toString(36).slice(2, 9)}`,
@@ -111,7 +99,6 @@ export const createEmployee = async (empData: any) => {
       return synthesized;
     } catch (fallbackErr) {
       console.error("[api] createEmployee -> fallback attempt failed", fallbackErr);
-      // As last resort, throw so the caller can fallback to local saving
       throw fallbackErr;
     }
   }

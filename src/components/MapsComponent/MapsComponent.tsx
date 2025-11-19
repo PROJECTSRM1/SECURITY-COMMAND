@@ -25,8 +25,8 @@ import { renderToString } from 'react-dom/server';
 // };
 
 const pushpinIcon = L.divIcon({
-  html: renderToString(<FaLocationDot style={{ fontSize: 32, color: '#4697d0' }} />),
-  className: '', // remove default leaflet styles
+  html: renderToString(<FaLocationDot className="map-pin-icon" />),
+  className: '', 
   iconSize: [24, 24], // optional
   iconAnchor: [12, 24], // optional (where the "tip" of icon points)
 });
@@ -55,11 +55,11 @@ export default function MapView() {
 //   const position = [17.385, 78.4867]; // Hyderabad coordinates
 
   return (
-    <div style={{ height: "500px", width: "100%" }}>
+    <div  className="map-wrapper">
  <MapContainer
       center={selectedOfficer ? selectedOfficer.coords : position}
       zoom={selectedOfficer ? 18 : 13}
-      style={{ height: '100%', width: '100%' }}
+      className="map-container"
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -79,7 +79,7 @@ export default function MapView() {
           }}
         >
           <Popup>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div className="map-popup">
               <div>Officer: {m.name}</div>
               <div>Availability: {m.availability ? 'On-Post' : 'Offline'}</div>
             </div>

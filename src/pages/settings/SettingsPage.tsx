@@ -1,4 +1,7 @@
+
 import { useEffect, useRef, useState } from "react";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { toggleTheme } from "../../app/features/theme/themeSlice";
 // import "./SettingsPage.css";
 
 type Schema = {
@@ -8,13 +11,14 @@ type Schema = {
     crowdMinDuration: number;
     vehicleConfidence: number;
     personConfidence: number;
-    toastNotifications: boolean; 
+    toastNotifications: boolean;
   };
   officerTracking: {
     enabled: boolean;
     gpsIntervalSeconds: number;
     escalateIfOfflineMinutes: number;
   };
+  themeDark?: boolean;
 };
 
 const LS_KEY = "rjb_settings_v1";
@@ -26,13 +30,14 @@ const DEFAULT: Schema = {
     crowdMinDuration: 30,
     vehicleConfidence: 85,
     personConfidence: 70,
-    toastNotifications: true,    
+    toastNotifications: true,
   },
   officerTracking: {
     enabled: true,
     gpsIntervalSeconds: 15,
     escalateIfOfflineMinutes: 10,
   },
+  themeDark: false,
 };
 
 function load(): Schema {
@@ -43,6 +48,7 @@ function load(): Schema {
     return {
       aiAlerts: { ...DEFAULT.aiAlerts, ...(parsed?.aiAlerts || {}) },
       officerTracking: { ...DEFAULT.officerTracking, ...(parsed?.officerTracking || {}) },
+      themeDark: typeof parsed?.themeDark === "boolean" ? parsed.themeDark : DEFAULT.themeDark,
     };
   } catch {
     return DEFAULT;
@@ -57,17 +63,17 @@ function save(obj: Schema) {
   }
 }
 
-/* Helper: parse safe number and clamp */
-const safeNumber = (value: string | number, fallback = 0) => {
-  if (typeof value === "number") return isNaN(value) ? fallback : value;
-  if (value === "" || value == null) return fallback;
-  const n = Number(value);
+const safeNumber = (v: any, fallback = 0) => {
+  const n = Number(v);
   return isNaN(n) ? fallback : n;
 };
+
 const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n));
 
 export default function MinimalSettings() {
-  // load once
+  const dispatch = useAppDispatch();
+  const reduxDark = useAppSelector((s) => (s as any).theme?.dark ?? false);
+
   const initialSettings = useRef<Schema>(load());
   const [settings, setSettings] = useState<Schema>(initialSettings.current);
   const [dirty, setDirty] = useState(false);
@@ -77,22 +83,29 @@ export default function MinimalSettings() {
     setDirty(JSON.stringify(initialSettings.current) !== JSON.stringify(settings));
   }, [settings]);
 
-  /* autosave on unload (optional safety) */
   useEffect(() => {
     const onBefore = () => save(settings);
     window.addEventListener("beforeunload", onBefore);
     return () => window.removeEventListener("beforeunload", onBefore);
   }, [settings]);
 
-  function updateAi<K extends keyof Schema["aiAlerts"]>(k: K, v: Schema["aiAlerts"][K]) {
+  /* On mount: ensure Redux theme matches stored settings (runs once) */
+  useEffect(() => {
+    if (typeof initialSettings.current.themeDark === "boolean" && initialSettings.current.themeDark !== reduxDark) {
+      dispatch(toggleTheme());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function updateAi<K extends keyof Schema["aiAlerts"]>(k: K, v: any) {
     setSettings((s) => ({ ...s, aiAlerts: { ...s.aiAlerts, [k]: v } }));
   }
-  function updateOfficer<K extends keyof Schema["officerTracking"]>(k: K, v: Schema["officerTracking"][K]) {
+
+  function updateOfficer<K extends keyof Schema["officerTracking"]>(k: K, v: any) {
     setSettings((s) => ({ ...s, officerTracking: { ...s.officerTracking, [k]: v } }));
   }
 
   function onSave() {
-    // minimal validation/clamps
     const s: Schema = {
       aiAlerts: {
         enabled: settings.aiAlerts.enabled,
@@ -119,6 +132,7 @@ export default function MinimalSettings() {
         gpsIntervalSeconds: Math.max(1, safeNumber(settings.officerTracking.gpsIntervalSeconds, DEFAULT.officerTracking.gpsIntervalSeconds)),
         escalateIfOfflineMinutes: Math.max(1, safeNumber(settings.officerTracking.escalateIfOfflineMinutes, DEFAULT.officerTracking.escalateIfOfflineMinutes)),
       },
+      themeDark: settings.themeDark ?? DEFAULT.themeDark,
     };
 
     setSettings(s);
@@ -132,7 +146,15 @@ export default function MinimalSettings() {
     el.textContent = "Settings saved";
     document.body.appendChild(el);
     setTimeout(() => el.classList.add("rjb-ms-toast-visible"), 10);
-    setTimeout(() => { el.classList.remove("rjb-ms-toast-visible"); setTimeout(() => el.remove(), 200); }, 1400);
+    setTimeout(() => {
+      el.classList.remove("rjb-ms-toast-visible");
+      setTimeout(() => el.remove(), 200);
+    }, 1400);
+
+    // final sync: ensure redux matches saved preference
+    if ((s.themeDark ?? DEFAULT.themeDark) !== reduxDark) {
+      dispatch(toggleTheme());
+    }
   }
 
   function onReset() {
@@ -141,56 +163,53 @@ export default function MinimalSettings() {
     save(DEFAULT);
     initialSettings.current = DEFAULT;
     setDirty(false);
+
+    if ((DEFAULT.themeDark ?? false) !== reduxDark) {
+      dispatch(toggleTheme());
+    }
   }
 
   return (
     <div className="rjb-ms-page">
       <div className="rjb-ms-card" role="region" aria-label="Settings">
         <div className="rjb-ms-row header">
-          <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
+          <div>
             <h1 className="rjb-ms-title">Settings</h1>
             <div className="rjb-ms-sub">Minimal — AI Alerts & Officer Tracking</div>
           </div>
 
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <div style={{ fontSize: 12, color: "#6b7280" }}>
-              Local key: <code style={{ background: "#f3f4f6", padding: "2px 6px", borderRadius: 6 }}>{LS_KEY}</code>
-            </div>
+          <div className="rjb-ms-sub">
+            Local key: <code>{LS_KEY}</code>
           </div>
         </div>
 
+        {/* AI ALERTS */}
         <section className="rjb-ms-section" aria-labelledby="ai-alerts-heading">
           <div className="rjb-ms-section-head" id="ai-alerts-heading">AI Alerts</div>
 
           <div className="rjb-ms-field">
             <label htmlFor="ai-enabled">Enable AI Alerts</label>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
-              <label className="rjb-checkbox-label">
-                <input
-                  id="ai-enabled"
-                  type="checkbox"
-                  checked={settings.aiAlerts.enabled}
-                  onChange={(e) => updateAi("enabled", e.target.checked)}
-                />
-              </label>
-            </div>
+            <label className="rjb-checkbox-label">
+              <input
+                id="ai-enabled"
+                type="checkbox"
+                checked={settings.aiAlerts.enabled}
+                onChange={(e) => updateAi("enabled", e.target.checked)}
+              />
+            </label>
           </div>
 
-          {/* NEW: Toast notifications toggle (only disables toast popups) */}
           <div className="rjb-ms-field">
             <label htmlFor="toastToggle">Enable Toast Notifications</label>
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <label className="rjb-checkbox-label">
-                <input
-                  id="toastToggle"
-                  type="checkbox"
-                  checked={settings.aiAlerts.toastNotifications}
-                  onChange={(e) => updateAi("toastNotifications", e.target.checked)}
-                  disabled={!settings.aiAlerts.enabled}
-                  aria-disabled={!settings.aiAlerts.enabled}
-                />
-              </label>
-            </div>
+            <label className="rjb-checkbox-label">
+              <input
+                id="toastToggle"
+                type="checkbox"
+                checked={settings.aiAlerts.toastNotifications}
+                disabled={!settings.aiAlerts.enabled}
+                onChange={(e) => updateAi("toastNotifications", e.target.checked)}
+              />
+            </label>
           </div>
 
           <div className="rjb-ms-field">
@@ -201,9 +220,8 @@ export default function MinimalSettings() {
               min={0}
               max={100}
               value={settings.aiAlerts.crowdThreshold}
-              onChange={(e) => updateAi("crowdThreshold", clamp(safeNumber(e.target.value, 0), 0, 100))}
               disabled={!settings.aiAlerts.enabled}
-              aria-disabled={!settings.aiAlerts.enabled}
+              onChange={(e) => updateAi("crowdThreshold", clamp(safeNumber(e.target.value, 0), 0, 100))}
             />
           </div>
 
@@ -214,9 +232,8 @@ export default function MinimalSettings() {
               type="number"
               min={0}
               value={settings.aiAlerts.crowdMinDuration}
-              onChange={(e) => updateAi("crowdMinDuration", Math.max(0, safeNumber(e.target.value, 0)))}
               disabled={!settings.aiAlerts.enabled}
-              aria-disabled={!settings.aiAlerts.enabled}
+              onChange={(e) => updateAi("crowdMinDuration", Math.max(0, safeNumber(e.target.value, 0)))}
             />
           </div>
 
@@ -228,9 +245,8 @@ export default function MinimalSettings() {
               min={0}
               max={100}
               value={settings.aiAlerts.vehicleConfidence}
-              onChange={(e) => updateAi("vehicleConfidence", clamp(safeNumber(e.target.value, 0), 0, 100))}
               disabled={!settings.aiAlerts.enabled}
-              aria-disabled={!settings.aiAlerts.enabled}
+              onChange={(e) => updateAi("vehicleConfidence", clamp(safeNumber(e.target.value, 0), 0, 100))}
             />
           </div>
 
@@ -242,28 +258,26 @@ export default function MinimalSettings() {
               min={0}
               max={100}
               value={settings.aiAlerts.personConfidence}
-              onChange={(e) => updateAi("personConfidence", clamp(safeNumber(e.target.value, 0), 0, 100))}
               disabled={!settings.aiAlerts.enabled}
-              aria-disabled={!settings.aiAlerts.enabled}
+              onChange={(e) => updateAi("personConfidence", clamp(safeNumber(e.target.value, 0), 0, 100))}
             />
           </div>
         </section>
 
+        {/* OFFICER TRACKING */}
         <section className="rjb-ms-section" aria-labelledby="officer-tracking-heading">
           <div className="rjb-ms-section-head" id="officer-tracking-heading">Officer Tracking</div>
 
           <div className="rjb-ms-field">
             <label htmlFor="officer-enabled">Enable Officer Tracking</label>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
-              <label className="rjb-checkbox-label">
-                <input
-                  id="officer-enabled"
-                  type="checkbox"
-                  checked={settings.officerTracking.enabled}
-                  onChange={(e) => updateOfficer("enabled", e.target.checked)}
-                />
-              </label>
-            </div>
+            <label className="rjb-checkbox-label">
+              <input
+                id="officer-enabled"
+                type="checkbox"
+                checked={settings.officerTracking.enabled}
+                onChange={(e) => updateOfficer("enabled", e.target.checked)}
+              />
+            </label>
           </div>
 
           <div className="rjb-ms-field">
@@ -273,9 +287,8 @@ export default function MinimalSettings() {
               type="number"
               min={5}
               value={settings.officerTracking.gpsIntervalSeconds}
-              onChange={(e) => updateOfficer("gpsIntervalSeconds", Math.max(1, safeNumber(e.target.value, 5)))}
               disabled={!settings.officerTracking.enabled}
-              aria-disabled={!settings.officerTracking.enabled}
+              onChange={(e) => updateOfficer("gpsIntervalSeconds", Math.max(1, safeNumber(e.target.value)))}
             />
           </div>
 
@@ -286,43 +299,62 @@ export default function MinimalSettings() {
               type="number"
               min={1}
               value={settings.officerTracking.escalateIfOfflineMinutes}
-              onChange={(e) => updateOfficer("escalateIfOfflineMinutes", Math.max(1, safeNumber(e.target.value, 1)))}
               disabled={!settings.officerTracking.enabled}
-              aria-disabled={!settings.officerTracking.enabled}
+              onChange={(e) => updateOfficer("escalateIfOfflineMinutes", Math.max(1, safeNumber(e.target.value)))}
             />
           </div>
         </section>
 
-        <div className="rjb-ms-actions">
-          <button className="rjb-ms-btn rjb-ms-btn-ghost" onClick={onReset}>Reset</button>
+        {/* THEME SECTION */}
+        <section className="rjb-ms-section" aria-labelledby="theme-heading">
+          <div className="rjb-ms-section-head" id="theme-heading">Theme</div>
 
-          <div style={{ display: "flex", gap: "10px" }}>
-            <button
-              className="rjb-help-btn rjb-ms-btn"
-              onClick={() => setShowHelp(true)}
-              aria-label="Open help"
-            >
-              Help
-            </button>
-
-            <button
-              className="rjb-ms-btn rjb-ms-btn-primary"
-              onClick={onSave}
-              disabled={!dirty}
-            >
-              Save
-            </button>
+          <div className="rjb-ms-field">
+            <label htmlFor="theme-dark-toggle">Dark Mode</label>
+            <label className="rjb-checkbox-label">
+              <input
+                id="theme-dark-toggle"
+                type="checkbox"
+                checked={!!settings.themeDark}
+                onChange={(e) => {
+                  const v = e.target.checked;
+                  setSettings((s) => ({ ...s, themeDark: v }));
+                  // dispatch toggle immediately so App wrapper flips class
+                  if (v !== reduxDark) dispatch(toggleTheme());
+                }}
+              />
+            </label>
           </div>
+        </section>
+
+        {/* ACTIONS */}
+        <div className="rjb-ms-actions">
+          <button className="rjb-ms-btn rjb-ms-btn-ghost" onClick={onReset}>
+            Reset
+          </button>
+
+          <button
+            className="rjb-ms-btn rjb-ms-btn-primary"
+            onClick={onSave}
+            disabled={!dirty}
+          >
+            Save
+          </button>
+
+          <button
+            className="rjb-help-btn"
+            onClick={() => setShowHelp(true)}
+          >
+            Help
+          </button>
         </div>
       </div>
 
-      {/* Help Modal */}
       {showHelp && (
         <div
           className="rjb-help-overlay"
           role="dialog"
           aria-modal="true"
-          aria-label="Settings help"
           onClick={() => setShowHelp(false)}
         >
           <div className="rjb-help-modal" onClick={(e) => e.stopPropagation()}>
@@ -330,40 +362,17 @@ export default function MinimalSettings() {
 
             <div className="rjb-help-section">
               <h3>AI Alerts</h3>
-
-              <p><strong>Enable AI Alerts</strong><br />
-              Turns the AI alert system on or off. If disabled, the system will not generate any alerts.</p>
-
-              <p><strong>Crowd Global Threshold (%)</strong><br />
-              Percentage of camera area occupied by people before declaring a crowd alert. Higher → fewer alerts, Lower → more sensitive.</p>
-
-              <p><strong>Crowd Minimum Duration (seconds)</strong><br />
-              How long the crowd must stay above the threshold before an alert is triggered. Prevents short/false positives.</p>
-
-              <p><strong>Vehicle Confidence Threshold (%)</strong><br />
-              Minimum AI confidence required to report a vehicle detection.</p>
-
-              <p><strong>Suspicious Person Confidence (%)</strong><br />
-              Minimum AI confidence required to report a suspicious person detection.</p>
-
-              <p><strong>Enable Toast Notifications</strong><br />
-              Toggle whether toast popups appear in the header for new alerts. If turned off, alerts are still generated and stored — only the popup toasts are suppressed.</p>
+              <p>Enable or disable the alerting system and tune confidence thresholds.</p>
             </div>
 
             <div className="rjb-help-section">
               <h3>Officer Tracking</h3>
-
-              <p><strong>Enable Officer Tracking</strong><br />
-              Enables GPS tracking for officers on duty. If off, no location updates are monitored.</p>
-
-              <p><strong>GPS Update Interval (seconds)</strong><br />
-              Frequency at which an officer's device sends location updates. Lower = more realtime but higher battery/network usage.</p>
-
-              <p><strong>Escalate if Offline (minutes)</strong><br />
-              If an officer does not send GPS data for this duration, the system will raise an escalation alert.</p>
+              <p>Control GPS update frequency and escalation timings.</p>
             </div>
 
-            <button className="rjb-help-close" onClick={() => setShowHelp(false)}>Close</button>
+            <button className="rjb-help-close" onClick={() => setShowHelp(false)}>
+              Close
+            </button>
           </div>
         </div>
       )}

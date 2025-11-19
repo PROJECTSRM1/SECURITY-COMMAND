@@ -87,6 +87,24 @@ body{
 .rjb-dynamic-inputbox {
   width: 400px;
 }
+/* Remove margin bottom from Form.Item */
+.rjb-form-remember-item {
+  margin-bottom: 0 !important;
+}
+
+/* Flex row for checkbox + forgot password */
+.rjb-remember-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Submit button spacing */
+.rjb-form-submit-item {
+  margin-top: 24px !important;
+  margin-bottom: 12px !important;
+}
+
 
 .rjb-create-account-txt{
   display: block;
@@ -118,6 +136,17 @@ body{
   border-radius: 10px;
   overflow: hidden;
 }
+
+/* Outer wrapper padding */
+.rjb-track-page-wrap {
+  padding: 20px;
+}
+
+/* Shared top margin for both columns */
+.rjb-track-col {
+  margin-top: 20px;
+}
+
 /* Layout design ends */
 
 /* components */
@@ -211,6 +240,13 @@ body{
   border: 1px solid rgba(15,23,36,0.08);
   background: #fff;
   font-size: 14px;
+}
+/* Button row layout */
+.rjb-ops-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 12px;
 }
 
 /* buttons */
@@ -399,6 +435,13 @@ body{
   padding: 12px;
 }
 
+/* Wrapper for the close button row */
+.rjb-ops-close-wrap {
+  margin-top: 12px;
+  text-align: right;
+}
+
+
 /* --- responsive rules (improved mobile UX) --- */
 
 /* medium screens: wrap controls and tighten item columns */
@@ -488,7 +531,6 @@ body{
 
 
 /* Settings Page CSS */
-
 /* page bg */
 .rjb-ms-page {
   font-family: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -510,6 +552,7 @@ body{
   padding: 20px;
   box-sizing: border-box;
   border: 1px solid rgba(20, 30, 40, 0.04);
+  color: #0f1724;
 }
 
 /* header row */
@@ -550,6 +593,7 @@ body{
   align-items: center;
   gap: 8px;
 }
+.rjb-help-btn:focus { outline: 3px solid rgba(15,98,254,0.14); outline-offset: 2px; }
 
 /* section */
 .rjb-ms-section {
@@ -577,6 +621,7 @@ body{
 .rjb-ms-field label {
   font-size: 13px;
   color: #233240;
+  margin: 0;
 }
 
 /* inputs */
@@ -589,12 +634,23 @@ body{
   outline: none;
   width: 100%;
   box-sizing: border-box;
+  background: #fff;
+  color: #0f1724;
+}
+
+/* input focus */
+.rjb-ms-field input[type="text"]:focus,
+.rjb-ms-field input[type="number"]:focus {
+  box-shadow: 0 6px 18px rgba(15, 98, 254, 0.08);
+  border-color: rgba(15, 98, 254, 0.9);
 }
 
 /* disabled style */
-.rjb-ms-field input[disabled] {
+.rjb-ms-field input[disabled],
+.rjb-ms-field input[aria-disabled="true"] {
   background: #f8fafc;
   opacity: 0.9;
+  cursor: not-allowed;
 }
 
 /* checkbox styling helpers */
@@ -603,6 +659,7 @@ body{
   gap: 8px;
   align-items: center;
   cursor: pointer;
+  user-select: none;
 }
 
 .rjb-checkbox-label input[type="checkbox"] {
@@ -610,6 +667,7 @@ body{
   height: 16px;
   margin: 0;
   accent-color: #0f62fe;
+  cursor: pointer;
 }
 
 /* actions */
@@ -630,9 +688,12 @@ body{
   border: none;
   transition: transform .08s ease, box-shadow .08s ease;
   box-shadow: 0 2px 8px rgba(15, 23, 36, 0.04);
+  background: #ffffff;
+  color: #334155;
 }
 
 .rjb-ms-btn:active { transform: translateY(1px); }
+.rjb-ms-btn:focus { outline: 3px solid rgba(15,98,254,0.12); outline-offset: 2px; }
 
 .rjb-ms-btn-ghost {
   background: transparent;
@@ -675,6 +736,7 @@ body{
   z-index: 9999;
   font-weight: 600;
   font-size: 13px;
+  box-shadow: 0 8px 24px rgba(2,6,23,0.22);
 }
 
 .rjb-ms-toast-visible {
@@ -738,27 +800,38 @@ body{
   border-radius: 8px;
   cursor: pointer;
 }
+.rjb-help-close:focus { outline: 3px solid rgba(15,98,254,0.12); outline-offset: 2px; }
+
+/* small improvements for keyboard-only users */
+.rjb-ms-field input:focus-visible,
+.rjb-checkbox-label input:focus-visible,
+.rjb-ms-btn:focus-visible {
+  outline: 3px solid rgba(15,98,254,0.12);
+  outline-offset: 2px;
+}
 
 /* responsive */
 @media (max-width: 700px) {
   .rjb-ms-field { grid-template-columns: 1fr; }
   .rjb-ms-card { padding: 16px; }
   .rjb-ms-actions { justify-content: stretch; flex-direction: column-reverse; }
+  .rjb-help-modal { max-width: 94%; padding: 16px; }
 }
 
 /* crowded people css  */
+/* ---------- crowded people layout (existing) ---------- */
 .rjb-crowd-grid-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(2, 1fr);
   gap: 16px;
   width: 100%;
-  height: 100vh; /* desktop behaviour preserved */
+  height: calc(100vh - 32px); /* keep some breathing room for header/padding if any */
   padding: 16px;
   box-sizing: border-box;
   font-family: "Inter", system-ui, sans-serif;
 }
 
+/* individual feed card */
 .rjb-crowd-feed-card {
   position: relative;
   background-color: #000;
@@ -767,6 +840,7 @@ body{
   box-shadow: 0 0 20px rgba(0, 255, 157, 0.15);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
   cursor: pointer;
+  min-height: 220px;
 }
 
 .rjb-crowd-feed-card:hover {
@@ -797,22 +871,29 @@ body{
   user-select: none;
 }
 
+/* Drawer wrapper: apply responsive widths via CSS, not inline styles */
+.rjb-drawer-wrap .ant-drawer-content-wrapper {
+  width: 70% !important;      /* desktop width */
+  max-width: 980px !important;
+}
+
+/* Make sure drawer content and body use natural heights and are flexible */
 .rjb-drawer-wrap .ant-drawer,
 .rjb-drawer-wrap .ant-drawer-content,
 .rjb-drawer-wrap .ant-drawer-wrapper-body {
   height: auto;
+  max-height: 100vh;
 }
 
-/* Make drawer body a flex column (safe default) */
 .rjb-drawer-wrap .ant-drawer-body {
   display: flex;
   flex-direction: column;
-  padding: 0 !important;
+  padding: 0;
   box-sizing: border-box;
-  height: auto;
+  height: 100%;
 }
 
-/* Inner wrapper used to host CctvAiFeeds content */
+/* inner wrapper should expand to fill drawer body */
 .rjb-drawer-inner {
   width: 100%;
   height: 100%;
@@ -822,35 +903,11 @@ body{
   overflow: hidden;
 }
 
-/* On small screens ONLY, make drawer full viewport and let inner layout fit */
-@media (max-width: 600px) {
-  .rjb-drawer-wrap .ant-drawer,
-  .rjb-drawer-wrap .ant-drawer-content,
-  .rjb-drawer-wrap .ant-drawer-wrapper-body {
-    height: 100vh !important;
-    max-height: 100vh !important;
-  }
-
-  .rjb-drawer-wrap .ant-drawer-body {
-    height: 100% !important;
-    display: flex;
-    flex-direction: column;
-    padding: 0 !important;
-  }
-
-  /* Force drawer to full width on phones */
-  .rjb-drawer-wrap .ant-drawer-content-wrapper,
-  .rjb-drawer-wrap .ant-drawer-content,
-  .rjb-drawer-wrap .ant-drawer {
-    width: 100% !important;
-    max-width: 100% !important;
-    transform: none !important;
-    right: 0 !important;
-  }
-
-  .rjb-drawer-wrap .ant-drawer-header { padding: 12px 16px; box-sizing: border-box; }
+/* ensure CctvAiFeeds fills available height — if that component uses 100% height it will work */
+.rjb-drawer-inner > * {
+  flex: 1 1 auto;
+  min-height: 0; /* critical for flex children so they can scroll */
 }
-
 
 /* Keep original desktop layout exactly as you had (100vh for container) */
 .rjb-cctv-container {
@@ -979,53 +1036,168 @@ body{
 @keyframes highlightIn { 0% { background-color: rgba(34,197,94,0.14); } 100% { background-color: transparent; } }
 .rjb-new-entry { animation: highlightIn 0.7s ease; }
 
-/* ---------- Mobile within Drawer: stacked layout (applies on small viewports) ---------- */
 @media (max-width: 900px) {
-  /* make the grid single column on narrow screens (page view) */
-  .rjb-crowd-grid-container { height: auto; grid-template-columns: 1fr; grid-template-rows: repeat(4, 1fr); }
 
-  .rjb-cctv-container {
-    flex-direction: column;
-    padding: 12px;
-    gap: 12px;
-    height: 100%; /* inside drawer this will match drawer's height on small screens */
+  /* Make main layouts become vertical */
+  .rjb-cctv-container,
+  .rjb-alerts-panel,
+  .rjb-crowd-grid-container {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 12px !important;
+    padding: 12px !important;
+    height: auto !important;
+    box-sizing: border-box;
   }
 
+  /* Right panel (tables area) */
+  .rjb-cctv-right,
+  .rjb-detail-card,
+  .rjb-people-logs {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    padding: 12px !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    border-radius: 12px;
+    box-sizing: border-box;
+  }
+
+  /* Make tables scroll horizontally on mobile */
+  .rjb-cctv-table-wrap,
+  .rjb-table-wrap {
+    width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+  }
+
+  /* Table min width so columns don’t squeeze */
+  .rjb-cctv-table,
+  .rjb-people-table,
+  .rjb-crowd-table {
+    min-width: 560px;   /* Adjust to 480px if needed */
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+  }
+
+  .rjb-cctv-table th,
+  .rjb-cctv-table td,
+  .rjb-people-table th,
+  .rjb-people-table td {
+    padding: 10px 12px;
+    white-space: nowrap;
+  }
+
+  /* Video container resizing for mobile */
   .rjb-cctv-video-wrap {
-    height: 45vh;
-    max-height: 420px;
-    min-height: 200px;
+    height: 42vh !important;
+    min-height: 180px !important;
+    max-height: 420px !important;
+  }
+
+  /* Make overlay label slightly smaller */
+  .rjb-cctv-overlay-text {
+    font-size: 13px;
+    padding: 6px 8px;
+  }
+
+  /* Improve scrolling of table panel */
+  .rjb-cctv-table-wrap {
+    max-height: 58vh !important;
+  }
+}
+
+/* ================================================================= */
+/*                    EXTRA SMALL MOBILES (≤420px)                   */
+/* ================================================================= */
+
+@media (max-width: 420px) {
+  .rjb-cctv-video-wrap {
+    height: 38vh !important;
+    min-height: 150px !important;
   }
 
   .rjb-cctv-right {
-    width: 100%;
-    height: auto;
-    max-height: calc(55vh);
-    padding: 12px;
-    overflow: hidden;
+    padding: 10px !important;
+    max-height: 62vh !important;
   }
 
+  .rjb-cctv-table th {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+
+  .rjb-cctv-table td {
+    font-size: 13px;
+    padding: 8px 10px;
+    
+  }
+}
+/* Fix for plate column overlapping other columns (CCTV table) */
+
+/* Use auto table layout so browser distributes columns sensibly */
+.rjb-cctv-table {
+  table-layout: auto !important;
+}
+
+/* Allow most cells to wrap and break long words if needed */
+.rjb-cctv-table td,
+.rjb-cctv-table th {
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+}
+
+/* Plate column: keep as single line but truncate with ellipsis to avoid overlap */
+.rjb-cctv-table td.rjb-plate-cell,
+.rjb-cctv-table th:first-child {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 160px;        /* tweak this to control how much plate text is visible */
+  box-sizing: border-box;
+}
+
+/* Make Plate cell render as block-ish element so ellipsis works reliably */
+.rjb-cctv-table td.rjb-plate-cell > * {
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: middle;
+}
+
+/* Slight column width hints to keep Time & Location readable */
+.rjb-cctv-table th:nth-child(2),
+.rjb-cctv-table td:nth-child(2) { min-width: 80px; } /* Type */
+.rjb-cctv-table th:nth-child(3),
+.rjb-cctv-table td:nth-child(3) { min-width: 90px; } /* Time */
+.rjb-cctv-table th:nth-child(4),
+.rjb-cctv-table td:nth-child(4) { min-width: 90px; } /* Location */
+
+/* On very narrow screens, allow the table wrapper to scroll horizontally (non-intrusive) */
+@media (max-width: 640px) {
   .rjb-cctv-table-wrap {
-    max-height: 100%;
-    overflow-y: auto;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .rjb-cctv-overlay-text { font-size: 13px; padding: 6px 8px; }
-
-  .rjb-cctv-container .rjb-cctv-left,
-  .rjb-cctv-container .rjb-cctv-right { width: 100%; box-sizing: border-box; }
+  /* reduce plate max width on small phones so other columns remain visible */
+  .rjb-cctv-table td.rjb-plate-cell,
+  .rjb-cctv-table th:first-child {
+    max-width: 120px;
+  }
 }
 
-/* Extra small phones */
-@media (max-width: 420px) {
-  .rjb-cctv-video-wrap { height: 40vh; min-height: 180px; }
-  .rjb-cctv-right { max-height: calc(60vh); padding: 10px; }
-  .rjb-cctv-table thead th { font-size: 13px; padding: 8px 10px; }
-  .rjb-cctv-table tbody td { padding: 8px 10px; font-size: 13px; }
+/* Safety: ensure no overflow hides drawer content */
+.rjb-cctv-container,
+.rjb-crowd-grid-container {
+  overflow: visible !important;
 }
 
-/* Safety: ensure no parent overflow hides drawer content */
-.rjb-crowd-grid-container, .rjb-cctv-container { overflow: visible; }
 
 
 /* CCTV-FEEDS PAGE STYLES */
@@ -1168,7 +1340,7 @@ body{
 }
 
 /* responsive tweaks */
-@media (max-width: 980px) {
+/* @media (max-width: 980px) {
   .rjb-cctv-container {
     flex-direction: column;
     padding: 12px;
@@ -1182,7 +1354,7 @@ body{
   .rjb-cctv-video-wrap {
     height: 420px;
   }
-}
+} */
 
 /* AnalyticsReports.css */  
 .rjb-ar-root { padding: 18px; font-family: Inter, Roboto, system-ui, Arial, sans-serif; color: #0b1220; }
@@ -1553,6 +1725,14 @@ body{
 }
 
 .rjb-detail-header { flex: 0 0 auto; }
+
+/* Flex layout for detail header */
+.rjb-detail-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
 
 .rjb-detail-title { margin: 0; }
 
@@ -1950,6 +2130,12 @@ body{
   box-sizing:border-box;
 }
 
+/* Hidden container for printable content */
+.rjb-print-hidden {
+  display: none !important;
+}
+
+
 /* Left form + right table (desktop grid) */
 .rjb-gp-container{
   display:grid;
@@ -2121,6 +2307,22 @@ body{
 
 /* Avatar ring style (Antd) */
 .rjb-gp-avatar-wrap { display:inline-flex; align-items:center; justify-content:center; }
+/* Avatar styling depending on image */
+.rjb-avatar-has-img {
+  background-color: #ffffff !important;
+}
+
+.rjb-avatar-no-img {
+  background-color: #bfbfbf !important;
+}
+
+/* Wrapper (kept untouched, but added if needed for layout) */
+.rjb-gp-avatar-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .rjb-gp-avatar-wrap .ant-avatar { box-shadow: 0 0 0 3px #ffffff, 0 0 0 4px #e5e7eb; border-radius:50%; }
 
 /* ---------- Accessibility / focus ---------- */
@@ -2642,6 +2844,12 @@ body{
   box-sizing: border-box;
 }
 
+/* Toast alert icon */
+.rjb-toast-alert-icon {
+  color: red;
+}
+
+
 /* padding variants applied from component */
 .rjb-headerbar--pad-sm { padding: 0 12px; }
 .rjb-headerbar--pad-lg { padding: 0 24px; }
@@ -2715,3 +2923,124 @@ body{
 /* small logo tweak for very small screens */
 @media (max-width: 480px) { .rjb-headerbar__logo--sm { width: 36px; height: 36px; } }
 
+/* Maps component CSS  */
+/* Map wrapper container */
+.map-wrapper {
+  height: 500px;
+  width: 100%;
+}
+
+/* Map container */
+.map-container {
+  height: 100%;
+  width: 100%;
+}
+
+/* Custom pin icon */
+.map-pin-icon {
+  font-size: 32px;
+  color: #4697d0;
+}
+
+/* Popup content layout */
+.map-popup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+  color: #1f2937;
+}
+
+
+/* Radar chart CSS  */
+.rjb-radar-chart {
+  width: 100%;
+  max-width: 500px;
+  max-height: 80vh;
+  aspect-ratio: 1;
+}
+
+/* Pie chart CSS  */
+.rjb-pie-chart {
+  width: 100%;
+  max-width: 500px;
+  max-height: 80vh;
+  aspect-ratio: 1;
+}
+
+/* Bar chart CSS  */
+.rjb-bar-chart {
+  width: 100%;
+  max-width: 700px;
+  max-height: 70vh;
+  aspect-ratio: 1.618;
+}
+
+/* Progress Bar CSS */
+/* Wrapper for the circular progress + label */
+.rjb-progress-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Title spacing below progress */
+.rjb-progress-title {
+  margin-top: 10px;
+}
+
+/* ---------- theme variables (global) ---------- */
+.theme-light {
+  --rjb-bg: #f6f8fb;
+  --rjb-text: #0f1724;
+  --rjb-card: #ffffff;
+  --rjb-muted: #6b7280;
+  background-color: var(--rjb-bg);
+  color: var(--rjb-text);
+  transition: background-color .2s ease, color .2s ease;
+}
+
+.theme-dark {
+  --rjb-bg: #071024;
+  --rjb-text: #e6eef8;
+  --rjb-card: #ffffff;
+  --rjb-muted: #94a3b8;
+  background-color: var(--rjb-bg);
+  color: var(--rjb-text);
+  transition: background-color .2s ease, color .2s ease;
+}
+
+/* ensure page fills viewport so background visible */
+html, body, #root {
+  height: 100%;
+}
+
+/* quick safe overrides so your main layout shows the theme immediately */
+.theme-dark .rjb-ms-page,
+.theme-dark .rjb-cctv-container,
+.theme-dark .rjb-crowd-grid-container {
+  background: #071024 !important;
+  color: var(--rjb-text) !important;
+}
+
+.theme-light .rjb-ms-page,
+.theme-light .rjb-cctv-container,
+.theme-light .rjb-crowd-grid-container {
+  background: var(--rjb-bg) !important;
+  color: var(--rjb-text) !important;
+}
+
+/* small helpers so cards also flip colors (non-invasive) */
+.theme-dark .rjb-ms-card,
+.theme-dark .rjb-cctv-right,
+.theme-dark .rjb-crowd-feed-card {
+  background: #0f1724 !important;
+  color: var(--rjb-text) !important;
+}
+
+.theme-light .rjb-ms-card,
+.theme-light .rjb-cctv-right,
+.theme-light .rjb-crowd-feed-card {
+  background: var(--rjb-card) !important;
+  color: var(--rjb-text) !important;
+}
