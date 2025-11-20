@@ -34,6 +34,7 @@
   --font-main: "Inter", system-ui, sans-serif;
   --primary-bg: #f7f7f9;
 }
+
 body{
   margin: 0;
   color: var(--color-text);
@@ -2989,58 +2990,879 @@ body{
   margin-top: 10px;
 }
 
-/* ---------- theme variables (global) ---------- */
-.theme-light {
-  --rjb-bg: #f6f8fb;
-  --rjb-text: #0f1724;
-  --rjb-card: #ffffff;
-  --rjb-muted: #6b7280;
-  background-color: var(--rjb-bg);
-  color: var(--rjb-text);
-  transition: background-color .2s ease, color .2s ease;
-}
+/* ============================
+   COMPLETE DARK THEME — DROP AT END
+   ============================ */
 
+/* 1) Core dark variables (mirror all :root variables you use above) */
 .theme-dark {
-  --rjb-bg: #071024;
-  --rjb-text: #e6eef8;
-  --rjb-card: #ffffff;
-  --rjb-muted: #94a3b8;
-  background-color: var(--rjb-bg);
-  color: var(--rjb-text);
-  transition: background-color .2s ease, color .2s ease;
+  /* primary background & text */
+  --color-bg: #071024;           /* page background */
+  --primary-bg: #071024;         /* app primary background */
+  --color-text: #e6eef8;         /* main text color */
+  --text: #d7e3f3;               /* alternate text used in components */
+
+  /* card / surface colors */
+  --card-bg: #0b1722;            /* card backgrounds */
+  --color-header-cards: #081224;
+
+  /* UI accents */
+  --color-primary: #1f6feb;
+  --color-bttn-primary: #1f6feb;
+  --color-bttn-bg: #0f4fa8;
+  --accent: #2dd4bf;
+  --accent-light: rgba(45,212,191,0.08);
+
+  /* inputs / muted */
+  --color-input-fields: #0b2230;
+  --muted: #95a3b8;
+  --color-secondary: #152431;
+
+  /* success / danger */
+  --color-success: #22c55e;
+  --color-danger: #f87171;
+
+  /* shadows */
+  --shadow: 0 6px 20px rgba(2,6,23,0.6);
+  --shadow-hover: 0 14px 36px rgba(2,6,23,0.65);
+
+  /* other */
+  --font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  transition: background-color .18s ease, color .18s ease;
 }
 
-/* ensure page fills viewport so background visible */
-html, body, #root {
+/* 2) Ensure root / body / app root use the dark background so there are no white gaps */
+.theme-dark,
+.theme-dark html,
+.theme-dark body,
+.theme-dark #root {
+  background: var(--primary-bg) !important;
+  color: var(--color-text) !important;
+  min-height: 100%;
+}
+
+/* 3) Surface-specific safe overrides (non-invasive; use variables where possible) */
+.theme-dark .rjb-ms-page,
+.theme-dark .rjb-cctv-container,
+.theme-dark .rjb-crowd-grid-container,
+.theme-dark .rjb-ar-root,
+.theme-dark .rjb-lay__content {
+  background: var(--primary-bg) !important;
+  color: var(--color-text) !important;
+}
+
+/* Cards & panels */
+.theme-dark .rjb-ms-card,
+.theme-dark .rjb-cctv-right,
+.theme-dark .rjb-ops-card,
+.theme-dark .rjb-ops-item,
+.theme-dark .rjb-gp-form-card,
+.theme-dark .rjb-gp-list-card,
+.theme-dark .rjb-chart-card,
+.theme-dark .rjb-kpi,
+.theme-dark .rjb-alert-item,
+.theme-dark .ant-card,
+.theme-dark .ant-layout-content {
+  background: var(--card-bg) !important;
+  color: var(--color-text) !important;
+  box-shadow: var(--shadow) !important;
+  border-color: rgba(255,255,255,0.03) !important;
+}
+
+/* Headings + labels */
+.theme-dark .rjb-ms-title,
+.theme-dark h1, .theme-dark h2, .theme-dark h3, .theme-dark h4, .theme-dark label {
+  color: var(--color-text) !important;
+}
+
+/* Inputs, selects, textareas */
+.theme-dark input,
+.theme-dark textarea,
+.theme-dark select,
+.theme-dark .ant-input,
+.theme-dark .ant-input-affix-wrapper,
+.theme-dark .ant-select-selector,
+.theme-dark .ant-input-number,
+.theme-dark .rjb-ms-field input[type="text"],
+.theme-dark .rjb-ms-field input[type="number"] {
+  background: var(--color-input-fields) !important;
+  color: var(--color-text) !important;
+  border-color: rgba(255,255,255,0.06) !important;
+}
+
+/* Disabled inputs */
+.theme-dark input[disabled],
+.theme-dark .ant-input[disabled],
+.theme-dark .rjb-ms-field input[disabled] {
+  background: rgba(255,255,255,0.02) !important;
+  color: rgba(255,255,255,0.52) !important;
+}
+
+/* Buttons (Ant + custom) */
+.theme-dark .ant-btn,
+.theme-dark .rjb-ms-btn,
+.theme-dark .rjb-ops-action,
+.theme-dark .rjb-gp-button {
+  background: var(--card-bg) !important;
+  color: var(--color-text) !important;
+  border-color: rgba(255,255,255,0.06) !important;
+  box-shadow: none !important;
+}
+.theme-dark .ant-btn-primary,
+.theme-dark .rjb-ms-btn-primary,
+.theme-dark .rjb-ops-btn {
+  background: var(--color-bttn-primary) !important;
+  color: #fff !important;
+  border-color: var(--color-bttn-primary) !important;
+}
+
+/* Menus, sider & header */
+.theme-dark .rjb-lay__sider,
+.theme-dark .ant-layout-sider,
+.theme-dark .ant-menu,
+.theme-dark .ant-menu-item,
+.theme-dark .ant-menu-submenu-title {
+  background: linear-gradient(180deg, rgba(0,8,20,0.9), rgba(4,14,26,0.95)) !important;
+  color: var(--color-text) !important;
+  border: none !important;
+}
+
+/* Header bar */
+.theme-dark .rjb-headerbar,
+.theme-dark .ant-layout-header {
+  background: linear-gradient(180deg, #071024 0%, #0b1724 100%) !important;
+  color: var(--color-text) !important;
+  box-shadow: 0 6px 20px rgba(2,6,23,0.6) !important;
+}
+
+/* Ant form labels */
+.theme-dark .ant-form-item-label > label {
+  color: var(--muted) !important;
+}
+
+/* Tables */
+.theme-dark .ant-table,
+.theme-dark .ant-table-thead > tr > th,
+.theme-dark .ant-table-tbody > tr > td {
+  background: var(--card-bg) !important;
+  color: var(--color-text) !important;
+  border-color: rgba(255,255,255,0.03) !important;
+}
+
+/* Toasts and overlay modals */
+.theme-dark .rjb-ms-toast,
+.theme-dark .rjb-help-modal,
+.theme-dark .rjb-assign-modal,
+.theme-dark .rjb-gp-modal {
+  background: var(--card-bg) !important;
+  color: var(--color-text) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+/* Charts / SVG wrappers: keep their wrappers dark */
+.theme-dark .rjb-chart-card,
+.theme-dark .rjb-chart-area,
+.theme-dark .rjb-chart-center {
+  background: transparent !important;
+  color: var(--color-text) !important;
+}
+
+/* Map containers (leaflet) */
+.theme-dark .map-wrapper,
+.theme-dark .map-container {
+  background: transparent !important;
+  color: var(--color-text) !important;
+}
+
+/* Small helpers to prevent washed-out labels */
+.theme-dark .rjb-ms-sub,
+.theme-dark .rjb-ops-sub,
+.theme-dark .rjb-ops-last,
+.theme-dark .rjb-kpi-title,
+.theme-dark .rjb-kpi-sub {
+  color: var(--muted) !important;
+}
+
+/* Accent highlights (links, badges) */
+.theme-dark a,
+.theme-dark .rjb-badge,
+.theme-dark .rjb-status-badge,
+.theme-dark .ant-badge {
+  color: var(--color-primary) !important;
+}
+
+/* Make sure focus rings remain visible */
+.theme-dark :focus,
+.theme-dark :focus-visible {
+  outline: 3px solid rgba(31,111,235,0.18) !important;
+  outline-offset: 2px;
+}
+
+/* Force remove low-opacity rules on dark cards that dim content */
+.theme-dark .rjb-ms-card *[style*="opacity"],
+.theme-dark .rjb-ms-card [style*="opacity"] {
+  opacity: 1 !important;
+}
+
+/* Final safety fallback — catches remaining components that read from --text / --card-bg */
+.theme-dark [style*="background: var(--card-bg)"],
+.theme-dark [style*="background: var(--primary-bg)"] {
+  background: var(--card-bg) !important;
+  color: var(--color-text) !important;
+}
+
+/* Minor scrollbar styling for dark mode (desktop browsers) */
+.theme-dark ::-webkit-scrollbar { width: 10px; height: 10px; }
+.theme-dark ::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.06);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.theme-dark ::-webkit-scrollbar-track { background: transparent; }
+
+
+/*  DARK THEME FIXES — AI ALERTS PAGE */
+
+/* Whole alerts panel */
+.theme-dark .rjb-alerts-panel {
+  background: #050b16 !important;
+  color: var(--color-text) !important;
+}
+
+.theme-dark .rjb-btn{
+  background: #0b1724 !important;
+  color: var(--color-text) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+.theme-dark .rjb-assign-title{
+  color: var(--color-text) !important;
+}
+
+.theme-dark .rjb-help-section p{
+  color: var(--color-text) !important;
+}
+
+/* Left list column */
+.theme-dark .rjb-alerts-list {
+  background: #050b16 !important;
+  border-right: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+.theme-dark .rjb-alert-item {
+  background: #0b1724 !important;
+  box-shadow: none !important;
+  color: var(--color-text) !important;
+}
+
+.theme-dark .rjb-alert-item.selected {
+  background: #111827 !important;
+}
+
+/* Text in list */
+.theme-dark .rjb-alert-title strong,
+.theme-dark .rjb-alert-source,
+.theme-dark .rjb-alert-confidence {
+  color: var(--color-text) !important;
+}
+
+.theme-dark .rjb-alert-meta {
+  color: var(--muted) !important;
+}
+
+/* Severity pills */
+.theme-dark .rjb-alert-severity.critical {
+  background: rgba(248,113,113,0.18) !important;
+  color: #fecaca !important;
+}
+
+.theme-dark .rjb-alert-severity.high {
+  background: rgba(251,191,36,0.16) !important;
+  color: #fed7aa !important;
+}
+
+.theme-dark .rjb-alert-severity.medium,
+.theme-dark .rjb-alert-severity.low {
+  background: rgba(148,163,184,0.18) !important;
+  color: #e2e8f0 !important;
+}
+
+/* Buttons inside list */
+.theme-dark .rjb-alert-actions .rjb-btn {
+  background: #0b1724 !important;
+  color: var(--color-text) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+/* Right detail column background */
+.theme-dark .rjb-alerts-detail {
+  background: #050b16 !important;
+  color: var(--color-text) !important;
+}
+
+/* Main detail card on the right */
+.theme-dark .rjb-detail-card {
+  background: #0b1724 !important;
+  color: var(--color-text) !important;
+  box-shadow: 0 8px 24px rgba(2,6,23,0.7) !important;
+}
+
+/* Headings / sub text on the right */
+.theme-dark .rjb-detail-title,
+.theme-dark .rjb-detail-sub,
+.theme-dark .rjb-detail-right {
+  color: var(--color-text) !important;
+}
+
+/* Right side meta / actions column */
+.theme-dark .rjb-meta-actions {
+  color: var(--color-text) !important;
+}
+
+/* AI Reasoning box */
+.theme-dark .rjb-ai-reason pre {
+  background: #020617 !important;
+  color: var(--color-text) !important;
+  border-radius: 8px !important;
+}
+
+/* Notes list */
+.theme-dark .rjb-note {
+  background: #020617 !important;
+  color: var(--color-text) !important;
+}
+
+/* "Add note" input + button */
+.theme-dark .rjb-add-note input {
+  background: #020617 !important;
+  color: var(--color-text) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+}
+
+.theme-dark .rjb-add-note .rjb-btn {
+  background: #1f6feb !important;
+  color: #fff !important;
+  border-color: #1f6feb !important;
+}
+
+/* =========================
+   Analytics Table - Polished Dark
+   Drop this at the END of your CSS
+   ========================= */
+
+.theme-dark .rjb-ar-table-card {
+  padding: 18px;
+  background: linear-gradient(180deg,#0c1724 0%, #0f1724 100%) !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+  box-shadow: 0 8px 30px rgba(2,6,23,0.55) !important;
+}
+
+/* Table heading row */
+.theme-dark .rjb-ar-table thead th,
+.theme-dark .ant-table-thead > tr > th {
+  background: transparent !important;
+  color: rgba(230, 238, 248, 0.85) !important; /* softer white */
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 14px 18px !important;
+  border-bottom: 1px solid rgba(255,255,255,0.04) !important;
+}
+
+/* Table body rows */
+.theme-dark .rjb-ar-table tbody tr td,
+.theme-dark .ant-table-tbody > tr > td {
+  background: transparent !important;
+  color: rgba(230,238,248,0.92) !important;
+  padding: 14px 18px !important;
+  border-bottom: 1px solid rgba(255,255,255,0.03) !important; /* subtle divider */
+}
+
+/* Make rows slightly elevated on hover */
+.theme-dark .rjb-ar-table tbody tr:hover td,
+.theme-dark .ant-table-tbody > tr:hover > td {
+  background: rgba(255,255,255,0.02) !important;
+  transform: translateY(-1px);
+  transition: background .12s ease, transform .12s ease;
+}
+
+/* Make the central 'kind' badge nicer */
+.theme-dark .rjb-ar-table .badge,
+.theme-dark .rjb-ar-alert-badge,
+.theme-dark .ant-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.06) !important;
+  color: var(--color-text) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  padding: 6px 10px !important;
+  border-radius: 999px !important;
+  font-weight: 700;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.35);
+  min-width: 56px;
+  text-align: center;
+}
+
+/* Summary cell: slightly lighter font-weight for readability */
+.theme-dark .rjb-ar-table tbody tr td.rjb-summary,
+.theme-dark .rjb-ar-table tbody tr td:nth-child(3) {
+  font-weight: 600;
+  color: rgba(230,238,248,0.95) !important;
+}
+
+/* Meta column align right and slightly muted */
+.theme-dark .rjb-ar-table tbody tr td.rjb-meta,
+.theme-dark .rjb-ar-table tbody tr td:last-child {
+  text-align: right;
+  color: rgba(230,238,248,0.65) !important;
+  font-weight: 600;
+}
+
+/* Export buttons grouped and aligned right */
+.theme-dark .rjb-ar-export-wrap {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+/* Export button styles */
+.theme-dark .rjb-ar-export-wrap button,
+.theme-dark .rjb-ar-header button {
+  background: rgba(255,255,255,0.04) !important;
+  color: var(--color-text) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  padding: 8px 14px !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+.theme-dark .rjb-ar-export-wrap .primary,
+.theme-dark .rjb-ar-export-wrap .rjb-btn-primary,
+.theme-dark .rjb-ar-export-wrap button.primary {
+  background: var(--color-bttn-primary) !important; /* your brand blue */
+  color: #fff !important;
+  border-color: transparent !important;
+}
+
+/* Table wrapper - rounded and inner padding */
+.theme-dark .rjb-ar-table-card .rjb-events-table-wrap,
+.theme-dark .rjb-ar-table {
+  border-radius: 12px;
+  overflow: hidden;
+  padding-bottom: 6px;
+}
+
+/* Subtle footer text */
+.theme-dark .rjb-ar-table-card .rjb-table-footer,
+.theme-dark .rjb-ar-table-card .rjb-empty {
+  color: rgba(230,238,248,0.5) !important;
+}
+
+/* Pagination (Antd) - dark friendly */
+.theme-dark .ant-pagination {
+  color: rgba(230,238,248,0.9) !important;
+}
+
+.theme-dark .ant-pagination-item,
+.theme-dark .ant-pagination-item a {
+  background: rgba(255,255,255,0.02) !important;
+  border: 0 !important;
+  color: rgba(230,238,248,0.9) !important;
+  min-width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.theme-dark .ant-pagination-item-active {
+  background: linear-gradient(180deg, rgba(31,110,235,1), rgba(22,88,204,1)) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 20px rgba(31,110,235,0.18) !important;
+}
+
+/* Scrollbar inside table area (subtle) */
+.theme-dark .rjb-events-table-wrap::-webkit-scrollbar,
+.theme-dark .rjb-ar-table-card::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+
+.theme-dark .rjb-events-table-wrap::-webkit-scrollbar-thumb,
+.theme-dark .rjb-ar-table-card::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.06);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* Make sure no bright overlays hide the rows (fix from screenshots) */
+.theme-dark .rjb-ar-table-card .ant-table-placeholder,
+.theme-dark .rjb-ar-table-card .ant-table-tbody > tr.ant-table-placeholder {
+  opacity: 0.06 !important;
+}
+
+/* Fix for export button outline on focus */
+.theme-dark .rjb-ar-export-wrap button:focus {
+  outline: 2px solid rgba(31,110,235,0.16) !important;
+  outline-offset: 2px;
+}
+
+/* Ensure the table header stays visible over charts */
+.theme-dark .rjb-ar-table-card { z-index: 1; }
+
+/* ==========================
+   PROFESSIONAL DARK THEME
+   Paste this at the END of your global CSS file
+   Activates when a parent has class: .theme-dark
+   ========================== */
+
+/* Dark theme variables (adjust the palette here) */
+.theme-dark {
+  --bg-900: #061422;       /* page bg */
+  --bg-800: #07182a;       /* content bg */
+  --bg-700: #0f2733;       /* card bg */
+  --panel:   #0b2430;      /* darker panels */
+  --muted:   #93a6b6;      /* muted text */
+  --text:    #e6eef8;      /* primary text */
+  --soft:    rgba(230,238,248,0.06); /* soft borders / dividers */
+  --accent:  #1f6feb;      /* brand accent */
+  --accent-2:#00b26a;      /* secondary accent */
+  --danger:  #ff6b6b;
+  --success: #2fc26b;
+  --card-shadow: 0 8px 28px rgba(2,8,15,0.55);
+  --glass:   rgba(255,255,255,0.02);
+  color-scheme: dark;
+}
+
+/* Make sure root elements use full height and get theme color */
+.theme-dark, .theme-dark html, .theme-dark body, .theme-dark #root {
+  background-color: var(--bg-900) !important;
+  color: var(--text) !important;
   height: 100%;
 }
 
-/* quick safe overrides so your main layout shows the theme immediately */
-.theme-dark .rjb-ms-page,
-.theme-dark .rjb-cctv-container,
-.theme-dark .rjb-crowd-grid-container {
-  background: #071024 !important;
-  color: var(--rjb-text) !important;
+/* Smooth transitions for mode flip */
+.theme-dark * {
+  transition: background-color .18s ease, color .18s ease, border-color .18s ease;
 }
 
-.theme-light .rjb-ms-page,
-.theme-light .rjb-cctv-container,
-.theme-light .rjb-crowd-grid-container {
-  background: var(--rjb-bg) !important;
-  color: var(--rjb-text) !important;
+/* ------------------------
+   LAYOUT / APP SHELL
+   ------------------------ */
+.theme-dark .rjb-lay__sider,
+.theme-dark .ant-layout-sider,
+.theme-dark .rjb-lay__sider .ant-layout-sider-children {
+  background: linear-gradient(180deg,var(--bg-800),var(--panel)) !important;
+  border-right: 1px solid rgba(255,255,255,0.03) !important;
+  color: var(--text) !important;
+  box-shadow: inset 0 -20px 60px rgba(0,0,0,0.45);
 }
 
-/* small helpers so cards also flip colors (non-invasive) */
+.theme-dark .rjb-headerbar,
+.theme-dark .ant-layout-header {
+  background: linear-gradient(90deg, rgba(2,8,20,0.9), rgba(4,18,32,0.9)) !important;
+  color: var(--text) !important;
+  box-shadow: 0 6px 20px rgba(2,8,15,0.45);
+}
+
+/* Sidebar menu items */
+.theme-dark .ant-menu,
+.theme-dark .ant-menu-item,
+.theme-dark .ant-menu-submenu-title {
+  background: transparent !important;
+  color: var(--text) !important;
+}
+
+.theme-dark .ant-menu-item:hover,
+.theme-dark .ant-menu-item-active,
+.theme-dark .ant-menu-submenu-title:hover {
+  background: rgba(255,255,255,0.02) !important;
+  box-shadow: inset 6px 0 0 var(--accent) !important;
+  color: var(--text) !important;
+}
+
+/* Title & brand */
+.theme-dark .rjb-headerbar__title { color: var(--accent) !important; }
+
+/* ------------------------
+   CARDS / PANELS
+   ------------------------ */
 .theme-dark .rjb-ms-card,
+.theme-dark .rjb-ops-card,
 .theme-dark .rjb-cctv-right,
-.theme-dark .rjb-crowd-feed-card {
-  background: #0f1724 !important;
-  color: var(--rjb-text) !important;
+.theme-dark .ant-card,
+.theme-dark .ant-card-body,
+.theme-dark .rjb-gp-form-card,
+.theme-dark .rjb-gp-list-card,
+.theme-dark .rjb-ops-map,
+.theme-dark .rjb-chart-card {
+  background: linear-gradient(180deg,var(--bg-700),var(--panel)) !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(255,255,255,0.03) !important;
+  box-shadow: var(--card-shadow) !important;
 }
 
-.theme-light .rjb-ms-card,
-.theme-light .rjb-cctv-right,
-.theme-light .rjb-crowd-feed-card {
-  background: var(--rjb-card) !important;
-  color: var(--rjb-text) !important;
+/* Card headers & light-blue title boxes */
+.theme-dark .rjb-subheadings,
+.theme-dark .rjb-ms-title,
+.theme-dark .rjb-chart-card h4,
+.theme-dark .rjb-ms-section-head {
+  color: var(--text) !important;
 }
+
+/* subtle divider */
+.theme-dark hr,
+.theme-dark .ant-divider,
+.theme-dark .rjb-ms-section {
+  border-color: rgba(255,255,255,0.04) !important;
+}
+
+/* ------------------------
+   TEXT, MUTED, LINKS
+   ------------------------ */
+.theme-dark .rjb-ms-sub,
+.theme-dark .rjb-ops-sub,
+.theme-dark .ant-form-item-label > label,
+.theme-dark .rjb-lay__stat-icon--gray {
+  color: var(--muted) !important;
+}
+
+.theme-dark a,
+.theme-dark .ant-typography a {
+  color: var(--accent) !important;
+}
+
+/* ------------------------
+   INPUTS / SELECTS / TEXTAREAS
+   ------------------------ */
+.theme-dark .ant-input,
+.theme-dark .ant-input-affix-wrapper,
+.theme-dark input,
+.theme-dark textarea,
+.theme-dark .ant-select-selector,
+.theme-dark .ant-input-number {
+  background: rgba(255,255,255,0.02) !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+  box-shadow: none !important;
+}
+
+/* Focus / outline */
+.theme-dark .ant-input:focus,
+.theme-dark .ant-input-affix-wrapper:focus,
+.theme-dark .ant-select-focused .ant-select-selector,
+.theme-dark .ant-input:focus-visible {
+  outline: 3px solid rgba(31,111,235,0.12) !important;
+  border-color: rgba(31,111,235,0.18) !important;
+}
+
+/* placeholder color */
+.theme-dark ::placeholder { color: rgba(230,238,248,0.35) !important; }
+
+/* ------------------------
+   BUTTONS
+   ------------------------ */
+.theme-dark .ant-btn,
+.theme-dark .ant-btn-default {
+  background: rgba(255,255,255,0.02) !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+  box-shadow: none !important;
+}
+
+.theme-dark .ant-btn-primary {
+  background: linear-gradient(180deg,var(--accent), #155ecb) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 20px rgba(31,111,235,0.12) !important;
+}
+
+/* ghost / danger */
+.theme-dark .ant-btn-dangerous,
+.theme-dark .rjb-ops-action-danger {
+  background: rgba(255,107,107,0.06) !important;
+  color: var(--danger) !important;
+  border-color: rgba(255,107,107,0.08) !important;
+}
+
+/* small pill buttons used in lists */
+.theme-dark .rjb-gp-chip,
+.theme-dark .ant-tag {
+  background: rgba(255,255,255,0.03) !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+}
+
+/* ------------------------
+   TABLES / LISTS
+   ------------------------ */
+.theme-dark .ant-table,
+.theme-dark .rjb-events-table,
+.theme-dark .rjb-cctv-table {
+  background: transparent !important;
+  color: var(--text) !important;
+  border-collapse: separate !important;
+}
+
+/* table header */
+.theme-dark .ant-table-thead > tr > th,
+.theme-dark .rjb-gp-table-head {
+  background: rgba(255,255,255,0.02) !important;
+  color: var(--muted) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.04) !important;
+}
+
+/* table body rows (zebra-ish subtle) */
+.theme-dark .ant-table-tbody > tr > td,
+.theme-dark .rjb-events-table td,
+.theme-dark .rjb-cctv-table tbody td {
+  background: rgba(255,255,255,0.01) !important;
+  color: var(--text) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.04) !important;
+}
+
+/* highlight selected or hovered row */
+.theme-dark .ant-table-tbody > tr:hover > td {
+  background: rgba(255,255,255,0.02) !important;
+}
+
+/* pill "kind" badges in table */
+.theme-dark .rjb-events-table .rjb-plate-cell .ant-tag,
+.theme-dark .ant-tag {
+  background: rgba(255,255,255,0.03) !important;
+  color: var(--accent) !important;
+  border: 1px solid rgba(255,255,255,0.03) !important;
+}
+
+/* pagination */
+.theme-dark .ant-pagination {
+  color: var(--muted) !important;
+}
+.theme-dark .ant-pagination-item-active a {
+  background: var(--accent) !important;
+  color: #fff !important;
+  border-color: var(--accent) !important;
+}
+
+/* ------------------------
+   FORMS / CHECKBOX / RADIO
+   ------------------------ */
+.theme-dark .ant-form-item-label > label {
+  color: var(--muted) !important;
+}
+
+.theme-dark .ant-checkbox-inner,
+.theme-dark .ant-radio-inner {
+  background: rgba(255,255,255,0.02) !important;
+  border-color: rgba(255,255,255,0.04) !important;
+}
+
+.theme-dark .ant-checkbox-checked .ant-checkbox-inner,
+.theme-dark .ant-radio-checked .ant-radio-inner {
+  background: linear-gradient(180deg,var(--accent), #165bd8) !important;
+  border-color: var(--accent) !important;
+}
+
+/* ------------------------
+   MODALS / DRAWERS / TOASTS
+   ------------------------ */
+.theme-dark .ant-modal-content,
+.theme-dark .ant-drawer-content {
+  background: var(--bg-700) !important;
+  color: var(--text) !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+}
+
+/* toasts / overlays */
+.theme-dark .rjb-help-modal,
+.theme-dark .rjb-toast,
+.theme-dark .rjb-assign-modal {
+  background: linear-gradient(180deg,var(--bg-700),var(--panel)) !important;
+  color: var(--text) !important;
+}
+
+/* ------------------------
+   CHARTS / SVG text
+   ------------------------ */
+.theme-dark .recharts-surface text,
+.theme-dark svg text,
+.theme-dark .recharts-legend-wrapper {
+  fill: var(--muted) !important;
+  color: var(--muted) !important;
+}
+
+.theme-dark .recharts-tooltip-wrapper,
+.theme-dark .recharts-cartesian-axis-tick-value {
+  color: var(--muted) !important;
+}
+
+/* If your chart library uses inline colors, try to force axis/grid color */
+.theme-dark .recharts-cartesian-grid line,
+.theme-dark .rjb-chart-card svg g .recharts-cartesian-grid line {
+  stroke: rgba(255,255,255,0.04) !important;
+}
+
+/* ------------------------
+   MAPS, POPUPS
+   ------------------------ */
+.theme-dark .leaflet-container,
+.theme-dark .map-wrapper,
+.theme-dark .map-container {
+  background: linear-gradient(180deg,var(--bg-800),var(--bg-900)) !important;
+  color: var(--text) !important;
+}
+
+/* popup */
+.theme-dark .leaflet-popup-content,
+.theme-dark .map-popup {
+  background: var(--bg-700) !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+}
+
+/* ------------------------
+   SMALL FIXUPS
+   ------------------------ */
+/* tooltips, small badges */
+.theme-dark .ant-badge-count,
+.theme-dark .ant-badge {
+  background: var(--accent) !important;
+  color: white !important;
+}
+
+/* scrollbars — subtle and consistent */
+.theme-dark ::-webkit-scrollbar { width: 10px; height: 10px; }
+.theme-dark ::-webkit-scrollbar-track { background: rgba(255,255,255,0.01); }
+.theme-dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.04); border-radius: 10px; }
+.theme-dark ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.06); }
+
+/* ensure high-contrast focus for keyboard users */
+.theme-dark :focus { outline-color: rgba(31,111,235,0.18) !important; outline-style: solid; outline-width: 3px; }
+
+/* Avoid accidental dimming by inline styles */
+.theme-dark .rjb-ms-card *[style*="opacity"],
+.theme-dark [style*="opacity"] {
+  opacity: 1 !important;
+}
+
+/* ------------------------
+   OPTIONAL: helper class for "light-card" panels
+   Use .dark-card to get a slightly lighter card inside dark theme
+   ------------------------ */
+.theme-dark .dark-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.04);
+  color: var(--text);
+  box-shadow: 0 8px 28px rgba(2,8,15,0.5);
+}
+
+/* ===== End of dark theme block ===== */

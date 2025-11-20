@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { toggleTheme } from "../../app/features/theme/themeSlice";
+import { setDark } from "../../app/features/theme/themeSlice";
 // import "./SettingsPage.css";
 
 type Schema = {
@@ -91,9 +92,12 @@ export default function MinimalSettings() {
 
   /* On mount: ensure Redux theme matches stored settings (runs once) */
   useEffect(() => {
+    // if (typeof initialSettings.current.themeDark === "boolean" && initialSettings.current.themeDark !== reduxDark) {
+    //   dispatch(toggleTheme());
+    // }
     if (typeof initialSettings.current.themeDark === "boolean" && initialSettings.current.themeDark !== reduxDark) {
-      dispatch(toggleTheme());
-    }
+  dispatch(setDark(!!initialSettings.current.themeDark));
+}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -152,9 +156,13 @@ export default function MinimalSettings() {
     }, 1400);
 
     // final sync: ensure redux matches saved preference
+    // if ((s.themeDark ?? DEFAULT.themeDark) !== reduxDark) {
+    //   dispatch(toggleTheme());
+    // }
     if ((s.themeDark ?? DEFAULT.themeDark) !== reduxDark) {
-      dispatch(toggleTheme());
-    }
+  dispatch(setDark(!!(s.themeDark ?? DEFAULT.themeDark)));
+}
+
   }
 
   function onReset() {
@@ -320,7 +328,9 @@ export default function MinimalSettings() {
                   const v = e.target.checked;
                   setSettings((s) => ({ ...s, themeDark: v }));
                   // dispatch toggle immediately so App wrapper flips class
-                  if (v !== reduxDark) dispatch(toggleTheme());
+                  // if (v !== reduxDark) dispatch(toggleTheme());
+                  if (v !== reduxDark) dispatch(setDark(v));
+
                 }}
               />
             </label>
