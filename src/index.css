@@ -819,8 +819,8 @@ body{
   .rjb-help-modal { max-width: 94%; padding: 16px; }
 }
 
-/* crowded people css  */
-/* ---------- crowded people layout (existing) ---------- */
+/*people css  */
+/* ----------people layout (existing) ---------- */
 .rjb-crowd-grid-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

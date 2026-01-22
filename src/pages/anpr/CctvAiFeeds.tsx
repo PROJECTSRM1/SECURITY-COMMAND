@@ -172,7 +172,7 @@ const CctvAiFeeds: React.FC<Props> = ({ camlink, title, showPeople }) => {
           />
           <div className="rjb-cctv-overlay">
             <div className="rjb-cctv-overlay-text">
-              {showPeopleFlag ? "Suspicious People" : "Vehicle Recognition"}
+              {showPeopleFlag ? "Suspicious People" : "Vehicle Detection"}
             </div>
           </div>
         </div>

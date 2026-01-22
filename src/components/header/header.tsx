@@ -223,11 +223,12 @@ const HeaderBar: React.FC = () => {
   /* ---------- search + pages ---------- */
   const pages = [
     { label: "Dashboard", path: "/app/dashboard" },
+    { label: "Criminal Record", path: "/app/criminal-record" },
     { label: "Analytics & Reports", path: "/app/analytics" },
     { label: "AI Alerts", path: "/app/ai-alerts" },
     { label: "Settings", path: "/app/settings" },
     { label: "Vehicle Recognition", path: "/app/cctv-ai-feeds" },
-    { label: "Crowded People", path: "/app/crowded-people" },
+    { label: "Crowd People", path: "/app/crowded-people" },
     { label: "Gate Pass & Visitors", path: "/app/gate-pass" },
     { label: "Officers", path: "/app/officers" },
     { label: "Officer Tracking", path: "/app/officers-track" },
@@ -302,7 +303,8 @@ const HeaderBar: React.FC = () => {
       <Space align="center" className="rjb-headerbar__left">
         <img src={BrandLogo} alt="Logo" className={`rjb-headerbar__logo ${logoSizeClass}`} />
         <Text className="rjb-headerbar__title">
-          RJB Security Command
+          {/* RJB Security Command */}
+          Smart Surveillance Security System
         </Text>
       </Space>
 

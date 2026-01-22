@@ -34,7 +34,8 @@ const Login: React.FC = () => {
         <div className="rjb-login-header">
           <div><SafetyOutlined className="rjb-logo-icon" /></div>
           <Title level={2} className="rjb-login-title">
-            RJB Security Command
+            {/* RJB Security Command */}
+            Smart Surveillance Security System
           </Title>
         </div>
 

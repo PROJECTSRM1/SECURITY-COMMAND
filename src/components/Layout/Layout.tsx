@@ -8,6 +8,7 @@ import {
   PieChartOutlined,
   MenuUnfoldOutlined,
   SettingOutlined,
+  SafetyOutlined,
 } from '@ant-design/icons';
 
 import { GiPoliceOfficerHead } from "react-icons/gi";
@@ -20,6 +21,7 @@ import { Layout, Menu, Modal, message } from 'antd';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 
 import HeaderBar from '../header/header';
+// import path from 'path';
 
 const { Content, Sider } = Layout;
 const { confirm } = Modal;
@@ -27,10 +29,16 @@ const { confirm } = Modal;
 const MenuItems = [
   { menuIcon: MenuUnfoldOutlined, label: 'Menu' },
   { menuIcon: MdOutlineDashboardCustomize, label: 'Dashboard', path: '/app/dashboard' },
+    {
+    key: 'Criminal Record',
+    label: 'Criminal Record',
+    menuIcon: SafetyOutlined,
+    path: '/app/criminal-record'
+  },
   {
     key: 'Live Map',
     menuIcon: HiMiniUserGroup,
-    label: 'Crowded People',
+    label: 'Crowd Cluster',
     path: '/app/crowded-people'
   },
   {
@@ -53,7 +61,8 @@ const MenuItems = [
   },
   {
     key: 'CCTV AI Feeds',
-    label: 'Vehicle Recognition',
+    // label: 'Vehicle Recognition',
+    label: 'Vehicle Detection',
     menuIcon: PicCenterOutlined,
     path: '/app/cctv-ai-feeds'
   },

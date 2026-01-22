@@ -9,6 +9,7 @@ import AlertsPanel from "../../pages/alertspanel/Alertspanel";
 import AnalyticsReports from "../../pages/analytics/AnalyticsReports";
 import SettingsPage from "../../pages/settings/SettingsPage";
 import OfficersPage from "../../pages/officers/OfficersPage";
+import CriminalRecord from "../../pages/criminalrecord";
 
 export const SecureRoutes = () => {
     
@@ -23,6 +24,7 @@ export const SecureRoutes = () => {
                  <Route path="analytics" element={<AnalyticsReports />} />
                  <Route path="settings" element={<SettingsPage />} />
                  <Route path="officers" element={<OfficersPage/>} />
+                 <Route path="criminal-record" element={<CriminalRecord/>} />
 
             </Route>
     </Routes>
