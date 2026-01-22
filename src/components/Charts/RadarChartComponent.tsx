@@ -1,0 +1,75 @@
+import { Radar, RadarChart, PolarGrid, Legend, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
+
+const data = [
+  {
+    subject: 'Gate 1',
+    A: 120,
+    B: 110,
+    fullMark: 150,
+  },
+  {
+    subject: 'Gate 2',
+    A: 98,
+    B: 130,
+    fullMark: 150,
+  },
+  {
+    subject: 'Gate 3',
+    A: 86,
+    B: 130,
+    fullMark: 150,
+  },
+  {
+    subject: 'Gate 4',
+    A: 99,
+    B: 100,
+    fullMark: 150,
+  },
+  {
+    subject: 'Gate 5',
+    A: 85,
+    B: 90,
+    fullMark: 150,
+  },
+];
+
+// #endregion
+// const RadarChartComponent = () => {
+//   return (
+    
+//     <RadarChart
+//       style={{ width: '100%', maxWidth: '500px', maxHeight: '80vh', aspectRatio: 1 }}
+//       responsive
+//       outerRadius="80%"
+//       data={data}
+//     >
+//       <PolarGrid />
+//       <PolarAngleAxis dataKey="subject" />
+//       <PolarRadiusAxis angle={30} domain={[0, 150]} />
+//       <Radar name="Crowd" dataKey="A" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+//       <Radar name="Officers/Cams" dataKey="B" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.6} />
+//       <Legend />
+//     </RadarChart>
+//   );
+// };
+
+const RadarChartComponent = () => {
+  return (
+    <RadarChart
+      className="rjb-radar-chart"
+      responsive
+      outerRadius="80%"
+      data={data}
+    >
+      <PolarGrid />
+      <PolarAngleAxis dataKey="subject" />
+      <PolarRadiusAxis angle={30} domain={[0, 150]} />
+      <Radar name="Crowd" dataKey="A" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+      <Radar name="Officers/Cams" dataKey="B" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.6} />
+      <Legend />
+    </RadarChart>
+  );
+};
+
+
+export default RadarChartComponent;
