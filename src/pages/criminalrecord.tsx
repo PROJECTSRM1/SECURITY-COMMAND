@@ -1,401 +1,407 @@
-import  { useEffect, useMemo, useState } from "react";
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-} from "recharts";
-// import "./AnalyticsReports.css";
+import React, { useState } from 'react';
+import { Search, Upload, User, FileText, MapPin, Clock, AlertTriangle, Camera, Shield, Car, X, CheckCircle } from 'lucide-react';
+import './CriminalRecord.css';
 
-
-
-/* ---------- Types ---------- */
-type VisitorEntry = {
-  id: string;
-  fullName: string;
-  idProof: string;
-  mobile: string;
-  purpose: string;
-  accessArea: string;
-  entry: string; // ISO datetime
-  validTill: string; // ISO datetime
-  photoDataUrl?: string | null;
-  createdAt?: number;
-};
-
-type AlertSeverity = "critical" | "high" | "medium" | "low";
-type AlertRecord = {
-  id: string;
-  title: string;
-  type: string;
-  severity: AlertSeverity;
-  confidence: number;
-  createdAt: string; // ISO
-  status: string;
-  source?: { name?: string; location?: string; snapshotDataUrl?: string | null };
-};
-
-const LS_VISITORS = "rjb_gatepass_visitors_v1";
-const LS_ALERTS = "rjb_alerts_v1";
-
-/* ---------- Helpers ---------- */
-function safeParse<T>(raw: string | null, fallback: T): T {
-  try {
-    return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function isoDateOnly(iso?: string) {
-  if (!iso) return "";
-  return iso.slice(0, 10); // YYYY-MM-DD
-}
-
-/* CSV export */
-function downloadCSV(filename: string, headers: string[], rows: (string | number)[][]) {
-  const csv =
-    [headers.join(",")].concat(
-      rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
-    ).join("\n");
-  const blob = new Blob([csv], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-/* ---------- Component ---------- */
-export default function AnalyticsReports() {
-  // date filters
-  const [fromDate, setFromDate] = useState<string>(() => {
-    const d = new Date();
-    d.setDate(d.getDate() - 13);
-    return d.toISOString().slice(0, 10);
+const CriminalRecord = () => {
+  const [searchData, setSearchData] = useState({
+    aadhaar: '',
+    name: '',
+    image: null
   });
-  const [toDate, setToDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
+  const [imagePreview, setImagePreview] = useState(null);
+  const [searchResults, setSearchResults] = useState(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [imageType, setImageType] = useState(null); // 'person' or 'vehicle'
 
-  // raw data
-  const [visitors, setVisitors] = useState<VisitorEntry[]>([]);
-  const [alerts, setAlerts] = useState<AlertRecord[]>([]);
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSearchData({ ...searchData, image: file });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+        // Simulate image type detection (in real app, use ML model)
+        const randomType = Math.random() > 0.5 ? 'vehicle' : 'person';
+        setImageType(randomType);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
-  // pagination
-  const [page, setPage] = useState<number>(1);
-  const rowsPerPage = 10;
-
-  useEffect(() => {
-    const rawV = localStorage.getItem(LS_VISITORS);
-    const rawA = localStorage.getItem(LS_ALERTS);
-
-    const demoVisitors: VisitorEntry[] = [
-      // fallback example if none in localStorage
-      {
-        id: "demo-1",
-        fullName: "Demo User",
-        idProof: "ID-111",
-        mobile: "9000000000",
-        purpose: "Visitor",
-        accessArea: "Outer Hall",
-        entry: new Date().toISOString(),
-        validTill: new Date(Date.now() + 3600 * 1000).toISOString(),
-        createdAt: Date.now(),
-        photoDataUrl: null,
-      },
-    ];
-
-    const demoAlerts: AlertRecord[] = [
-      {
-        id: "demo-a1",
-        title: "Suspicious motion",
-        type: "vision",
-        severity: "high",
-        confidence: 0.87,
-        createdAt: new Date().toISOString(),
-        status: "new",
-        source: { name: "Camera A1", location: "Gate 2", snapshotDataUrl: null },
-      },
-    ];
-
-    setVisitors(safeParse<VisitorEntry[]>(rawV, demoVisitors));
-    setAlerts(safeParse<AlertRecord[]>(rawA, demoAlerts));
-  }, []);
-
-  /* ---------- Filtering data by selected dates ---------- */
-  const filteredVisitors = useMemo(() => {
-    const f = new Date(fromDate);
-    const t = new Date(toDate);
-    t.setHours(23, 59, 59, 999);
-    return visitors.filter((v) => {
-      const dt = new Date(v.entry);
-      return dt >= f && dt <= t;
-    });
-  }, [visitors, fromDate, toDate]);
-
-  const filteredAlerts = useMemo(() => {
-    const f = new Date(fromDate);
-    const t = new Date(toDate);
-    t.setHours(23, 59, 59, 999);
-    return alerts.filter((a) => {
-      const dt = new Date(a.createdAt);
-      return dt >= f && dt <= t;
-    });
-  }, [alerts, fromDate, toDate]);
-
-  /* ---------- KPIs ---------- */
-  const kpis = useMemo(() => {
-    const totalVisitors = filteredVisitors.length;
-    const totalAlerts = filteredAlerts.length;
-    const bySeverity = filteredAlerts.reduce<Record<AlertSeverity, number>>(
-      (acc, r) => {
-        acc[r.severity] = (acc[r.severity] || 0) + 1;
-        return acc;
-      },
-      { critical: 0, high: 0, medium: 0, low: 0 }
-    );
-    return { totalVisitors, totalAlerts, bySeverity };
-  }, [filteredVisitors, filteredAlerts]);
-
-  /* ---------- Time series for chart (daily counts) ---------- */
-  const timeSeries = useMemo(() => {
-    const start = new Date(fromDate);
-    const end = new Date(toDate);
-    // build array of dates inclusive
-    const days: string[] = [];
-    const cur = new Date(start);
-    while (cur <= end) {
-      days.push(cur.toISOString().slice(0, 10));
-      cur.setDate(cur.getDate() + 1);
+  const handleSearch = () => {
+    if (!searchData.aadhaar || !searchData.name) {
+      alert('Please enter Aadhaar number and Name');
+      return;
     }
 
-    const visitorsMap: Record<string, number> = {};
-    const alertsMap: Record<string, number> = {};
-    days.forEach((d) => {
-      visitorsMap[d] = 0;
-      alertsMap[d] = 0;
-    });
-
-    filteredVisitors.forEach((v) => {
-      const d = isoDateOnly(v.entry);
-      if (visitorsMap[d] !== undefined) visitorsMap[d] += 1;
-    });
-    filteredAlerts.forEach((a) => {
-      const d = isoDateOnly(a.createdAt);
-      if (alertsMap[d] !== undefined) alertsMap[d] += 1;
-    });
-
-    return days.map((d) => ({ date: d, visitors: visitorsMap[d] || 0, alerts: alertsMap[d] || 0 }));
-  }, [fromDate, toDate, filteredVisitors, filteredAlerts]);
-
-  /* ---------- Pie data for alerts severity ---------- */
-  const pieData = useMemo(() => {
-    return [
-      { name: "Critical", value: kpis.bySeverity.critical, key: "critical" },
-      { name: "High", value: kpis.bySeverity.high, key: "high" },
-      { name: "Medium", value: kpis.bySeverity.medium, key: "medium" },
-      { name: "Low", value: kpis.bySeverity.low, key: "low" },
-    ].filter((d) => d.value > 0);
-  }, [kpis.bySeverity]);
-
-  const PIE_COLORS = ["#ef4444", "#f97316", "#facc15", "#60a5fa"];
-
-  /* ---------- Table rows (combined recent events) ---------- */
-  const combinedRows = useMemo(() => {
-    // combine visitors and alerts by time descending
-    const vRows = filteredVisitors.map((v) => ({
-      id: v.id,
-      kind: "visitor" as const,
-      when: v.entry,
-      summary: `${v.fullName} — ${v.purpose}`,
-      meta: v.accessArea,
-    }));
-    const aRows = filteredAlerts.map((a) => ({
-      id: a.id,
-      kind: "alert" as const,
-      when: a.createdAt,
-      summary: `${a.title} [${a.severity.toUpperCase()}]`,
-      meta: a.source?.name ?? a.type,
-    }));
-    return [...vRows, ...aRows].sort((a, b) => +new Date(b.when) - +new Date(a.when));
-  }, [filteredVisitors, filteredAlerts]);
-
-  const totalPages = Math.max(1, Math.ceil(combinedRows.length / rowsPerPage));
-  const visibleRows = combinedRows.slice((page - 1) * rowsPerPage, page * rowsPerPage);
-
-  /* ---------- Exports ---------- */
-  const exportVisitorsCSV = () => {
-    const headers = ["id", "fullName", "idProof", "mobile", "purpose", "accessArea", "entry", "validTill"];
-    const rows = filteredVisitors.map((v) => [
-      v.id,
-      v.fullName,
-      v.idProof,
-      v.mobile,
-      v.purpose,
-      v.accessArea,
-      v.entry,
-      v.validTill,
-    ]);
-    downloadCSV(`visitors_${fromDate}_to_${toDate}.csv`, headers, rows);
+    setIsScanning(true);
+    // Simulate face scanning and API call
+    setTimeout(() => {
+      setIsScanning(false);
+      // Mock data - replace with actual API call
+      setSearchResults({
+        personal: {
+          name: searchData.name,
+          aadhaar: searchData.aadhaar,
+          dob: '15/03/1985',
+          address: '6-3-1109/1, Raj Bhavan Road, Somajiguda, Hyderabad, Telangana - 500082',
+          phone: '+91 9876543210',
+          faceMatch: 98.5,
+          gender: 'Male',
+          bloodGroup: 'O+'
+        },
+        vehicleInfo: imageType === 'vehicle' ? {
+          vehicleNumber: 'TS-09-EA-5678',
+          vehicleType: 'Honda City',
+          ownerName: searchData.name,
+          registrationDate: '15/08/2020',
+          insurance: 'Active - Valid till 15/08/2026',
+          lastService: '10/12/2025'
+        } : {
+          vehicleNumber: 'TS-09-EA-5678',
+          vehicleType: 'Honda City',
+          ownerName: searchData.name,
+          registrationDate: '15/08/2020',
+          insurance: 'Active - Valid till 15/08/2026',
+          lastService: '10/12/2025'
+        },
+        criminalHistory: [
+          {
+            id: 1,
+            caseNumber: 'FIR-2023-002156',
+            crime: 'Theft',
+            date: '18/04/2023',
+            status: 'Closed',
+            location: 'Banjara Hills Police Station, Hyderabad',
+            severity: 'Medium',
+            description: 'Theft of electronic items from residential complex'
+          },
+          {
+            id: 2,
+            caseNumber: 'FIR-2024-001089',
+            crime: 'Vehicle Registration Fraud',
+            date: '12/01/2024',
+            status: 'Ongoing',
+            location: 'Cyber Crime Police Station, Hyderabad',
+            severity: 'High',
+            description: 'Fraudulent vehicle registration documents and fake number plates'
+          }
+        ],
+        tollGateHistory: [
+          {
+            id: 1,
+            gateName: 'Outer Ring Road Toll Plaza',
+            location: 'ORR, Shamshabad, Hyderabad',
+            date: '20/01/2026',
+            time: '15:45',
+            vehicleNumber: 'TS-09-EA-5678',
+            direction: 'Outbound'
+          },
+          {
+            id: 2,
+            gateName: 'Keesara Toll Gate',
+            location: 'NH-163, Keesara',
+            date: '18/01/2026',
+            time: '10:30',
+            vehicleNumber: 'TS-09-EA-5678',
+            direction: 'Inbound'
+          },
+          {
+            id: 3,
+            gateName: 'Ghatkesar Toll Plaza',
+            location: 'NH-202, Ghatkesar',
+            date: '15/01/2026',
+            time: '19:20',
+            vehicleNumber: 'TS-09-EA-5678',
+            direction: 'Outbound'
+          }
+        ],
+        riskLevel: 'High',
+        totalCases: 2,
+        activeCases: 1,
+        imageType: imageType
+      });
+    }, 2000);
   };
 
-  const exportAlertsCSV = () => {
-    const headers = ["id", "title", "type", "severity", "confidence", "createdAt", "status", "sourceName", "sourceLocation"];
-    const rows = filteredAlerts.map((a) => [
-      a.id,
-      a.title,
-      a.type,
-      a.severity,
-      a.confidence,
-      a.createdAt,
-      a.status,
-      a.source?.name ?? "",
-      a.source?.location ?? "",
-    ]);
-    downloadCSV(`alerts_${fromDate}_to_${toDate}.csv`, headers, rows);
+  const handleCloseResults = () => {
+    setSearchResults(null);
   };
 
-  const exportCombinedCSV = () => {
-    const headers = ["id", "kind", "when", "summary", "meta"];
-    const rows = combinedRows.map((r) => [r.id, r.kind, r.when, r.summary, r.meta]);
-    downloadCSV(`events_${fromDate}_to_${toDate}.csv`, headers, rows);
-  };
-
-  /* ---------- UI ---------- */
   return (
-    <div className="rjb-ar-root">
-      <header className="rjb-ar-header">
-        <h2>Analytics & Reports</h2>
-        <div className="rjb-ar-filters">
-          <label>
-            From <input type="date" value={fromDate} onChange={(e) => { setFromDate(e.target.value); setPage(1); }} />
-          </label>
-          <label>
-            To <input type="date" value={toDate} onChange={(e) => { setToDate(e.target.value); setPage(1); }} />
-          </label>
-          <button className="rjb-btn" onClick={() => { setFromDate(new Date(Date.now() - 13 * 86400000).toISOString().slice(0,10)); setToDate(new Date().toISOString().slice(0,10)); }}>
-            Last 14d
+    <div className="criminal-record-container">
+      <div className="page-header">
+        <div className="header-content">
+          <Shield className="header-icon" size={32} />
+          <h1>Criminal Record Search</h1>
+        </div>
+        <p className="header-subtitle">Search and verify criminal records with facial recognition</p>
+      </div>
+
+      {/* Search Form */}
+      <div className="search-section">
+        <div className="search-card">
+          <h2 className="section-title">Search Parameters</h2>
+          
+          <div className="form-grid">
+            <div className="form-group">
+              <label htmlFor="aadhaar">
+                <FileText size={18} />
+                Aadhaar Number
+              </label>
+              <input
+                id="aadhaar"
+                type="text"
+                placeholder="XXXX-XXXX-XXXX"
+                value={searchData.aadhaar}
+                onChange={(e) => setSearchData({ ...searchData, aadhaar: e.target.value })}
+                maxLength={14}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="name">
+                <User size={18} />
+                Full Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                placeholder="Enter suspect name"
+                value={searchData.name}
+                onChange={(e) => setSearchData({ ...searchData, name: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div className="upload-section">
+            <label className="upload-label">
+              <Camera size={18} />
+              Upload Image (Criminal/Vehicle Photo)
+            </label>
+            <div className="upload-area">
+              <input
+                type="file"
+                id="imageUpload"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="file-input"
+              />
+              <label htmlFor="imageUpload" className="upload-placeholder">
+                {imagePreview ? (
+                  <img src={imagePreview} alt="Preview" className="image-preview" />
+                ) : (
+                  <>
+                    <Upload size={48} />
+                    <p>Click to upload or drag and drop</p>
+                    <span>PNG, JPG up to 10MB</span>
+                  </>
+                )}
+              </label>
+            </div>
+          </div>
+
+          <button 
+            className="search-button"
+            onClick={handleSearch}
+            disabled={isScanning}
+          >
+            {isScanning ? (
+              <>
+                <div className="spinner"></div>
+                Scanning  & Searching Records...
+              </>
+            ) : (
+              <>
+                <Search size={20} />
+                Search Criminal Records
+              </>
+            )}
           </button>
         </div>
-      </header>
+      </div>
 
-      <section className="rjb-ar-kpis">
-        <div className="rjb-kpi">
-          <div className="rjb-kpi-title">Visitors</div>
-          <div className="rjb-kpi-value">{kpis.totalVisitors}</div>
-          <div className="rjb-kpi-sub">In selected period</div>
-        </div>
-        <div className="rjb-kpi">
-          <div className="rjb-kpi-title">Alerts</div>
-          <div className="rjb-kpi-value">{kpis.totalAlerts}</div>
-          <div className="rjb-kpi-sub">AI events</div>
-        </div>
-        <div className="rjb-kpi">
-          <div className="rjb-kpi-title">Critical</div>
-          <div className="rjb-kpi-value">{kpis.bySeverity.critical}</div>
-          <div className="rjb-kpi-sub">Critical alerts</div>
-        </div>
-        <div className="rjb-kpi">
-          <div className="rjb-kpi-title">Avg / day (visitors)</div>
-          <div className="rjb-kpi-value">{Math.round((kpis.totalVisitors / Math.max(1, timeSeries.length)) * 10) / 10}</div>
-          <div className="rjb-kpi-sub">Daily avg</div>
-        </div>
-      </section>
+      {/* Modal Results Card */}
+      {searchResults && (
+        <div className="modal-overlay" onClick={handleCloseResults}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title-section">
+                <h2>Criminal Record Details</h2>
+                <div className={`risk-indicator risk-${searchResults.riskLevel.toLowerCase()}`}>
+                  <AlertTriangle size={18} />
+                  {searchResults.riskLevel} Risk
+                </div>
+              </div>
+              <button className="close-button" onClick={handleCloseResults}>
+                <X size={24} />
+              </button>
+            </div>
 
-      <section className="rjb-ar-charts">
+            <div className="modal-content">
+              {/* Personal Information Section */}
+              <div className="info-section">
+                <div className="section-header">
+                  <User size={20} />
+                  <h3>Personal Information</h3>
+                  {imagePreview && searchResults.imageType === 'person' && (
+                    <div className="face-match-badge">
+                      <CheckCircle size={16} />
+                      {searchResults.personal.faceMatch}% Match
+                    </div>
+                  )}
+                </div>
+                <div className="info-content compact">
+                  <div className="info-row">
+                    <span className="label">Name:</span>
+                    <span className="value">{searchResults.personal.name}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="label">Aadhaar:</span>
+                    <span className="value">{searchResults.personal.aadhaar}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="label">DOB:</span>
+                    <span className="value">{searchResults.personal.dob}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="label">Gender:</span>
+                    <span className="value">{searchResults.personal.gender}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="label">Phone:</span>
+                    <span className="value">{searchResults.personal.phone}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="label">Blood:</span>
+                    <span className="value">{searchResults.personal.bloodGroup}</span>
+                  </div>
+                  <div className="info-row full-width">
+                    <span className="label">Address:</span>
+                    <span className="value">{searchResults.personal.address}</span>
+                  </div>
+                </div>
+              </div>
 
-  <div className="rjb-chart-card rjb-chart-line">
-    <h4>Daily — Visitors vs Alerts</h4>
-    <div className="rjb-chart-area">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={timeSeries} margin={{ left: 0, right: 10, top: 10, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey="visitors" stroke="#2563eb" dot={false} />
-          <Line type="monotone" dataKey="alerts" stroke="#ef4444" dot={false} />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
+              {/* Vehicle Information Section */}
+              <div className="info-section">
+                <div className="section-header">
+                  <Car size={20} />
+                  <h3>Vehicle Information</h3>
+                  {imagePreview && searchResults.imageType === 'vehicle' && (
+                    <div className="vehicle-match-badge">
+                      <CheckCircle size={16} />
+                      Vehicle Detected
+                    </div>
+                  )}
+                </div>
+                <div className="info-content compact">
+                  <div className="info-row">
+                    <span className="label">Vehicle No:</span>
+                    <span className="value vehicle-plate-text">{searchResults.vehicleInfo.vehicleNumber}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="label">Type:</span>
+                    <span className="value">{searchResults.vehicleInfo.vehicleType}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="label">Owner:</span>
+                    <span className="value">{searchResults.vehicleInfo.ownerName}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="label">Registered:</span>
+                    <span className="value">{searchResults.vehicleInfo.registrationDate}</span>
+                  </div>
+                  <div className="info-row full-width">
+                    <span className="label">Insurance:</span>
+                    <span className="value">{searchResults.vehicleInfo.insurance}</span>
+                  </div>
+                  <div className="info-row full-width">
+                    <span className="label">Last Service:</span>
+                    <span className="value">{searchResults.vehicleInfo.lastService}</span>
+                  </div>
+                </div>
+              </div>
 
-  <div className="rjb-chart-card rjb-chart-pie">
-    <h4>Alerts by Severity</h4>
-    <div className="rjb-chart-area rjb-chart-center">
-      {pieData.length ? (
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie data={pieData} dataKey="value" nameKey="name" outerRadius={80} label>
-              {pieData.map((entry, idx) => (
-                <Cell key={entry.key} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
-        </ResponsiveContainer>
-      ) : (
-        <div className="rjb-empty">No alerts in range</div>
+              {/* Criminal History Section */}
+              <div className="info-section">
+                <div className="section-header">
+                  <AlertTriangle size={20} />
+                  <h3>Criminal History</h3>
+                  <div className="case-badges">
+                    <span className="badge">Total: {searchResults.totalCases}</span>
+                    <span className="badge active">Active: {searchResults.activeCases}</span>
+                  </div>
+                </div>
+                <div className="cases-list">
+                  {searchResults.criminalHistory.map((record, index) => (
+                    <div key={record.id} className="case-item compact">
+                      <div className="case-header">
+                        <div className="case-number">{record.caseNumber}</div>
+                        <span className={`case-status status-${record.status.toLowerCase()}`}>
+                          {record.status}
+                        </span>
+                      </div>
+                      <div className="case-details">
+                        <div className="case-title">{record.crime}</div>
+                        <p className="case-description">{record.description}</p>
+                        <div className="case-meta">
+                          <span className="meta-item">
+                            <Clock size={14} />
+                            {record.date}
+                          </span>
+                          <span className="meta-item">
+                            <MapPin size={14} />
+                            {record.location}
+                          </span>
+                          <span className={`severity severity-${record.severity.toLowerCase()}`}>
+                            {record.severity}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Toll Gate History Section */}
+              <div className="info-section">
+                <div className="section-header">
+                  <MapPin size={20} />
+                  <h3>Recent Toll Activity</h3>
+                  <span className="record-count">{searchResults.tollGateHistory.length} Records</span>
+                </div>
+                <div className="toll-list">
+                  {searchResults.tollGateHistory.map((toll) => (
+                    <div key={toll.id} className="toll-item compact">
+                      <div className="toll-left">
+                        <MapPin size={18} />
+                      </div>
+                      <div className="toll-info">
+                        <div className="toll-header">
+                          <span className="toll-name">{toll.gateName}</span>
+                          <span className="vehicle-plate-mini">{toll.vehicleNumber}</span>
+                        </div>
+                        <div className="toll-meta">
+                          <span className="toll-time">
+                            <Clock size={12} />
+                            {toll.date} • {toll.time}
+                          </span>
+                          <span className={`toll-direction direction-${toll.direction.toLowerCase()}`}>
+                            {toll.direction}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
-  </div>
-
-</section>
-
-
-      <section className="rjb-ar-table-card">
-        <div className="rjb-table-head">
-          <h4>Events (visitors & alerts)</h4>
-          <div className="rjb-table-actions">
-            <button className="rjb-btn" onClick={exportVisitorsCSV}>Export Visitors</button>
-            <button className="rjb-btn" onClick={exportAlertsCSV}>Export Alerts</button>
-            <button className="rjb-btn-primary" onClick={exportCombinedCSV}>Export All</button>
-          </div>
-        </div>
-
-        <div className="rjb-events-table-wrap">
-          <table className="rjb-events-table">
-            <thead>
-              <tr>
-                <th>When</th>
-                <th>Kind</th>
-                <th>Summary</th>
-                <th>Meta</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visibleRows.length === 0 && (
-                <tr><td colSpan={4} className="rjb-empty-row">No events in selected dates.</td></tr>
-              )}
-              {visibleRows.map((r) => (
-                <tr key={r.id}>
-                  <td>{new Date(r.when).toLocaleString()}</td>
-                  <td className={`rjb-badge ${r.kind}`}>{r.kind}</td>
-                  <td>{r.summary}</td>
-                  <td>{r.meta}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="rjb-pagination">
-          <div>Showing {visibleRows.length} of {combinedRows.length}</div>
-          <div>
-            <button className="rjb-btn" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>Prev</button>
-            <span className="rjb-page">{page} / {totalPages}</span>
-            <button className="rjb-btn" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Next</button>
-          </div>
-        </div>
-      </section>
-    </div>
   );
-}
+};
+
+export default CriminalRecord;
