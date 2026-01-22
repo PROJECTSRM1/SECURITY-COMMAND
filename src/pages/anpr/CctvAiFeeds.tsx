@@ -33,6 +33,10 @@ type VehicleData = {
   status: "Normal" | "Wrong Route" | "Rash Drive" | "Robbery Suspect" | "Forgery" | "Emergency";
 };
 
+// const [people, setPeople] = useState<
+//   { id: string; gender: string; lat: string; long: string; suspicious: string; time: string }[]
+// >([]);
+
 const samplePlates = [
   { plateNumber: "TS09AB1234", vehicleType: "Car", vehicleModel: "Honda City", location: "Gate 1" },
   { plateNumber: "AP28CC9988", vehicleType: "Bike", vehicleModel: "Royal Enfield", location: "Gate 2" },
@@ -43,6 +47,26 @@ const samplePlates = [
 ];
 
 const sampleTollgates = ["ORR-Exit 1", "Shamshabad Toll", "Gachibowli Gate", "NH44 Checkpoint", "Airport Entry"];
+
+
+type PersonRow = {
+  id: string;
+  gender: string;
+  lat: string;
+  long: string;
+  suspicious: "Idle" | "suspicious";
+  time: string;
+};
+
+const samplePeople = [
+  { gender: "Male", lat: "28.6155", long: "77.2112", suspicious: "Idle" as const },
+  { gender: "Female", lat: "28.6142", long: "77.2104", suspicious: "suspicious" as const },
+  { gender: "Male", lat: "28.6139", long: "77.2090", suspicious: "Idle" as const },
+  { gender: "Female", lat: "28.6140", long: "77.2100", suspicious: "suspicious" as const },
+];
+
+
+// const now = () => new Date().toLocaleTimeString();
 
 /** HELPERS **/
 const getNowTimeString = (): string => new Date().toLocaleTimeString();
@@ -99,7 +123,9 @@ const makeVehicleEntry = (base: {
   };
 };
 
-const CctvAiFeeds: React.FC<Props> = ({ camlink, title }) => {
+const CctvAiFeeds: React.FC<Props> = ({ camlink, title, showPeople }) => {
+  const [people, setPeople] = useState<PersonRow[]>([]);
+
   const [vehicles, setVehicles] = useState<VehicleData[]>([]);
   const [latestVehicleId, setLatestVehicleId] = useState<string | null>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleData | null>(null);
@@ -133,8 +159,84 @@ const CctvAiFeeds: React.FC<Props> = ({ camlink, title }) => {
     if (activeTab === 3) return v.status === "Emergency";
     return true;
   });
+  useEffect(() => {
+  if (!showPeople) return;
 
-  return (
+  setPeople(
+    samplePeople.map((p, i) => ({
+      ...p,
+      id: `${Date.now()}-${i}`,
+      time: new Date().toLocaleTimeString(),
+    }))
+  );
+
+  const timer = setInterval(() => {
+    const p = samplePeople[Math.floor(Math.random() * samplePeople.length)];
+    setPeople(prev => [
+      {
+        ...p,
+        id: `${Date.now()}`,
+        time: new Date().toLocaleTimeString(),
+      },
+      ...prev,
+    ].slice(0, 10));
+  }, 1000);
+
+  return () => clearInterval(timer);
+}, [showPeople]);
+
+
+
+return showPeople ? (
+  <div className="rjb-cctv-container rjb-crowd-horizontal">
+
+    {/* LEFT: VIDEO */}
+    <div className="rjb-crowd-left">
+      <div className="rjb-cctv-video-wrap">
+        <iframe
+          title={titleFinal}
+          src={src}
+          frameBorder={0}
+          allowFullScreen
+          className="rjb-cctv-iframe1"
+        />
+        <div className="rjb-cctv-overlay">
+          <div className="rjb-cctv-overlay-text">Suspicious People</div>
+        </div>
+      </div>
+    </div>
+
+    {/* RIGHT: TABLE */}
+    <div className="rjb-crowd-right">
+      <h2 className="rjb-cctv-heading">People Scan Logs</h2>
+      <div className="rjb-cctv-table-wrap">
+        <table className="rjb-cctv-table">
+          <thead>
+            <tr>
+              <th>Gender</th>
+              <th>Position</th>
+              <th>Suspicious</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {people.map(p => (
+              <tr key={p.id}>
+                <td>{p.gender}</td>
+                <td>{p.lat}, {p.long}</td>
+                <td>{p.suspicious}</td>
+                <td>{p.time}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+) : (
+
+
     <div className="rjb-cctv-container rjb-cctv-vertical">
       
       {/* 4 TABS ABOVE VIDEO */}
