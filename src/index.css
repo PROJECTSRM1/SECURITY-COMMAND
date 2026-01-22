@@ -3962,10 +3962,10 @@ body{
 /* 2. THE WHITE POPUP CARD */
 .rjb-modal-content {
   background: white;
-  width: 850px;
+  width: 700px;
   max-width: 95%;
   border-radius: 12px;
-  padding: 30px;
+  padding: 20px;
   box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
   position: relative;
   animation: modalScaleIn 0.3s ease-out;
@@ -4031,21 +4031,22 @@ body{
 
 /* 5. LABELS AND DATA ROWS */
 .rjb-section-title {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   color: #1a73e8;
   text-transform: uppercase;
   margin: 15px 0 10px 0;
+  margin: 10px 0 5px 0;
 }
 
 .rjb-detail-row {
   display: flex;
-  font-size: 14px;
-  margin-bottom: 10px;
+  font-size: 13px;
+  margin-bottom: 6px;
 }
 
 .rjb-detail-row span {
-  width: 130px;
+  width: 110px;
   color: #777;
   font-weight: 600;
   flex-shrink: 0;
@@ -4093,4 +4094,202 @@ body{
   padding: 10px 25px;
   border-radius: 6px;
   cursor: pointer;
+}
+/* Modal Header with Profile */
+.rjb-header-profile {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.rjb-owner-img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid #1a73e8;
+  object-fit: cover;
+}
+
+/* Stitched Route Timeline */
+.rjb-route-container {
+  margin-top: 10px;
+  padding-left: 10px;
+}
+
+.rjb-route-step {
+  position: relative;
+  padding-left: 25px;
+  padding-bottom: 15px;
+  font-size: 13px;
+  color: #555;
+}
+
+.rjb-route-dot {
+  position: absolute;
+  left: 0;
+  top: 5px;
+  width: 10px;
+  height: 10px;
+  background: #ccc;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.rjb-route-dot.active {
+  background: #1a73e8;
+  box-shadow: 0 0 8px rgba(26, 115, 232, 0.5);
+}
+
+.rjb-route-line {
+  position: absolute;
+  left: 4.5px;
+  top: 15px;
+  width: 1px;
+  height: calc(100% - 5px);
+  background: #ddd;
+  z-index: 1;
+}
+
+.rjb-route-step.current {
+  font-weight: bold;
+  color: #1a73e8;
+}
+
+/* Path Cell in Table */
+.rjb-path-cell {
+  color: #666;
+  font-style: italic;
+  font-size: 12px;
+}
+/* Tab Styling */
+.rjb-tabs-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  background: #f1f3f4;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.rjb-tab-button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background: white;
+  color: #555;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 13px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.rjb-tab-button.active {
+  background: #1a73e8;
+  color: white;
+}
+
+.rjb-tab-button:hover:not(.active) {
+  background: #e8eaed;
+}
+
+/* Badges and Buttons */
+.rjb-v-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+}
+.rjb-v-badge.danger { background: #fee2e2; color: #dc2626; }
+.rjb-v-badge.success { background: #dcfce7; color: #16a34a; }
+.rjb-v-badge.warning { background: #fef3c7; color: #d97706; }
+
+.rjb-btn-view {
+  background: #1a73e8;
+  color: white;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.rjb-emergency-box {
+  background: #fff5f5;
+  border-left: 4px solid #f56565;
+  padding: 10px;
+  margin-top: 15px;
+  font-size: 12px;
+  color: #c53030;
+}
+/* Tab Navigation Wrapper */
+.rjb-tabs-wrapper {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  background: #f8f9fa;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.rjb-tab-nav {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  background: white;
+  color: #495057;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.rjb-tab-nav.active {
+  background: #1a73e8;
+  color: white;
+  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.25);
+}
+
+.rjb-tab-nav:hover:not(.active) {
+  background: #e9ecef;
+  transform: translateY(-1px);
+}
+
+/* Status Tags in Table */
+.rjb-status-tag {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.rjb-status-tag.normal { background: #dcfce7; color: #166534; }
+.rjb-status-tag.wrong-route, 
+.rjb-status-tag.robbery-suspect, 
+.rjb-status-tag.emergency { background: #fee2e2; color: #991b1b; }
+.rjb-status-tag.rash-drive, 
+.rjb-status-tag.forgery { background: #fef3c7; color: #92400e; }
+
+.rjb-text-danger {
+  color: #dc2626;
+  font-weight: bold;
+}
+
+.rjb-empty-msg {
+  text-align: center;
+  padding: 30px;
+  color: #6b7280;
+  font-style: italic;
+}
+.rjb-cctv-iframe {
+  width: 100%;
+  height: 380px; /*  reduced */
+}
+.rjb-cctv-video-wrap {
+  height: auto !important;
 }
