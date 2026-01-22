@@ -23,7 +23,7 @@ type VehicleData = {
   rcStatus: "Active" | "Expired" | "Blacklisted";
   registrationDate: string;
   address: string;
-  isWanted: boolean; 
+  isWanted: boolean;
 };
 
 type PersonRowStatic = {
@@ -38,6 +38,7 @@ type PersonRow = PersonRowStatic & {
   time: string;
 };
 
+// EXTENDED SAMPLE VEHICLES
 const samplePlates = [
   { plateNumber: "TS09AB1234", vehicleType: "Car", location: "Gate 1" },
   { plateNumber: "AP28CC9988", vehicleType: "Bike", location: "Gate 2" },
@@ -45,6 +46,12 @@ const samplePlates = [
   { plateNumber: "KA05MN3344", vehicleType: "Truck", location: "Gate 4" },
   { plateNumber: "TS12GH4444", vehicleType: "Car", location: "Gate 2" },
   { plateNumber: "MH20ZZ7777", vehicleType: "Van", location: "Gate 5" },
+  { plateNumber: "DL01RT9001", vehicleType: "SUV", location: "Gate 1" },
+  { plateNumber: "KA03NB5566", vehicleType: "Bike", location: "Gate 3" },
+  { plateNumber: "TN07PQ1122", vehicleType: "Car", location: "Gate 4" },
+  { plateNumber: "HR26BX4455", vehicleType: "Truck", location: "Gate 2" },
+  { plateNumber: "UP16CK7788", vehicleType: "Van", location: "Gate 1" },
+  { plateNumber: "GJ05HH9900", vehicleType: "SUV", location: "Gate 5" },
 ];
 
 const PERSON_DATA: PersonRowStatic[] = [
@@ -69,34 +76,30 @@ const yesNo = (): "Yes" | "No" => (Math.random() > 0.3 ? "Yes" : "No");
 const randomTollHistory = () => {
   const count = Math.floor(Math.random() * 3) + 1;
   const selectedTolls = [...sampleTollgates].sort(() => 0.5 - Math.random()).slice(0, count);
-
   return selectedTolls
     .map((gate, index) => {
-      const minutesAgo = (index + 1) * (Math.floor(Math.random() * 40) + 15);
-      return `${gate} (${getPastTime(minutesAgo)})`;
+      const mins = (index + 1) * (Math.floor(Math.random() * 40) + 15);
+      return `${gate} (${getPastTime(mins)})`;
     })
     .join(", ");
 };
-
-const randomChallans = () => Math.floor(Math.random() * 4);
 
 const makeVehicleEntry = (base: {
   plateNumber: string;
   vehicleType: string;
   location: string;
-}): VehicleData => {
+}, customTime?: string): VehicleData => {
   const randomNames = ["Rajesh Kumar", "Sravani Reddy", "Amit Singh", "Priya Sharma", "Vikram Rathore"];
-  
   return {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
     plateNumber: base.plateNumber,
     vehicleType: base.vehicleType,
-    time: getNowTimeString(),
+    time: customTime || getNowTimeString(),
     location: base.location,
     insurance: yesNo(),
     pollution: yesNo(),
     tollgates: randomTollHistory(),
-    challans: randomChallans(),
+    challans: Math.floor(Math.random() * 4),
     ownerName: randomNames[Math.floor(Math.random() * randomNames.length)],
     mobileNumber: `+91 ${Math.floor(6000000000 + Math.random() * 3999999999)}`,
     aadharNumber: `${Math.floor(1000 + Math.random() * 8999)} **** ****`,
@@ -112,20 +115,33 @@ const CctvAiFeeds: React.FC<Props> = ({ camlink, title, showPeople }) => {
   const [latestVehicleId, setLatestVehicleId] = useState<string | null>(null);
   const [people, setPeople] = useState<PersonRow[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleData | null>(null);
+  const [filterDate, setFilterDate] = useState<string>("");
 
   const locationState = useLocation();
   const locState = (locationState && (locationState as any).state) || {};
 
   const showPeopleFlag = typeof showPeople === "boolean" ? showPeople : !!locState?.showPeople;
-  const src = camlink ?? locState?.camlink ?? "https://www.youtube.com/embed/5_XSYlAfJZM?autoplay=1&mute=1";
+  const src = camlink ?? locState?.camlink ?? "https://www.youtube.com/embed/N7PVa8b5YOM?autoplay=1&mute=1&controls=1&start=4&loop=1&playlist=N7PVa8b5YOM&rel=0";
   const titleFinal = title ?? locState?.Title ?? "CCTV YouTube Feed";
 
   useEffect(() => {
+    if (filterDate) {
+      // STATIC MODE FOR SELECTED DATE
+      const staticData: VehicleData[] = [];
+      const times = ["09:15:00", "10:30:22", "11:45:10", "13:00:05", "14:20:45", "16:10:12", "18:05:30", "20:50:00"];
+      for (let i = 0; i < 8; i++) {
+        staticData.push(makeVehicleEntry(samplePlates[i % samplePlates.length], times[i]));
+      }
+      setVehicles(staticData);
+      setLatestVehicleId(null);
+      return;
+    }
+
+    // LIVE MODE
     setVehicles(() => {
       const initial: VehicleData[] = [];
       for (let i = 0; i < 4; i++) {
-        const base = samplePlates[Math.floor(Math.random() * samplePlates.length)];
-        initial.push(makeVehicleEntry(base));
+        initial.push(makeVehicleEntry(samplePlates[Math.floor(Math.random() * samplePlates.length)]));
       }
       return initial;
     });
@@ -139,7 +155,7 @@ const CctvAiFeeds: React.FC<Props> = ({ camlink, title, showPeople }) => {
     }, 3000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [filterDate]);
 
   useEffect(() => {
     if (!showPeopleFlag) {
@@ -154,39 +170,33 @@ const CctvAiFeeds: React.FC<Props> = ({ camlink, title, showPeople }) => {
       <div className="rjb-cctv-video-full">
         <div className="rjb-cctv-video-wrap">
           <iframe title={titleFinal} src={src} frameBorder={0} allowFullScreen className="rjb-cctv-iframe" />
-          <div className="rjb-cctv-overlay">
-            <div className="rjb-cctv-overlay-text">
-              {showPeopleFlag ? "Suspicious People" : "Vehicle Detection"}
-            </div>
-          </div>
+          <div className="rjb-cctv-overlay"><div className="rjb-cctv-overlay-text">{showPeopleFlag ? "Suspicious People" : "Vehicle Detection"}</div></div>
         </div>
       </div>
 
       <div className="rjb-cctv-table-full">
-        <h2 className="rjb-cctv-heading">
-          {showPeopleFlag ? "People Scan Logs" : `${titleFinal} — Vehicle Scan Logs`}
-        </h2>
+        <div className="rjb-table-header-row">
+          <h2 className="rjb-cctv-heading">
+            {showPeopleFlag ? "People Scan Logs" : `${titleFinal} — Vehicle Scan Logs`}
+            {filterDate && !showPeopleFlag && <span className="rjb-static-badge">HISTORY</span>}
+          </h2>
+          
+          {!showPeopleFlag && (
+            <div className="rjb-filter-container">
+              <label>Filter by Date: </label>
+              <input type="date" className="rjb-date-input" value={filterDate} onChange={(e) => setFilterDate(e.target.value)} />
+              {filterDate && <button className="rjb-clear-btn" onClick={() => setFilterDate("")}>Reset</button>}
+            </div>
+          )}
+        </div>
+
         <div className="rjb-cctv-table-wrap">
           <table className="rjb-cctv-table">
             <thead>
               {showPeopleFlag ? (
-                <tr>
-                  <th>Gender</th>
-                  <th>Position</th>
-                  <th>Suspicious</th>
-                  <th>Time</th>
-                </tr>
+                <tr><th>Gender</th><th>Position</th><th>Suspicious</th><th>Time</th></tr>
               ) : (
-                <tr>
-                  <th>Plate</th>
-                  <th>Type</th>
-                  <th>Time</th>
-                  <th>Location</th>
-                  <th>Insurance</th>
-                  <th>Pollution</th>
-                  <th>Tollgate History</th>
-                  <th>Challans</th>
-                </tr>
+                <tr><th>Plate</th><th>Type</th><th>Time</th><th>Location</th><th>Insurance</th><th>Pollution</th><th>Tollgate History</th><th>Challans</th></tr>
               )}
             </thead>
             <tbody>
@@ -194,9 +204,7 @@ const CctvAiFeeds: React.FC<Props> = ({ camlink, title, showPeople }) => {
                 vehicles.map((v) => (
                   <tr key={v.id} className={v.id === latestVehicleId ? "rjb-new-entry" : ""}>
                     <td className="rjb-plate-cell">{v.plateNumber}</td>
-                    <td className="rjb-clickable-cell" onClick={() => setSelectedVehicle(v)}>
-                      {v.vehicleType}
-                    </td>
+                    <td className="rjb-clickable-cell" onClick={() => setSelectedVehicle(v)}>{v.vehicleType}</td>
                     <td>{v.time}</td>
                     <td>{v.location}</td>
                     <td>{v.insurance}</td>
@@ -207,12 +215,7 @@ const CctvAiFeeds: React.FC<Props> = ({ camlink, title, showPeople }) => {
                 ))
               ) : (
                 people.map((p) => (
-                  <tr key={p.id}>
-                    <td>{p.gender}</td>
-                    <td>{`${p.lat}, ${p.long}`}</td>
-                    <td>{p.suspicious}</td>
-                    <td>{p.time}</td>
-                  </tr>
+                  <tr key={p.id}><td>{p.gender}</td><td>{`${p.lat}, ${p.long}`}</td><td>{p.suspicious}</td><td>{p.time}</td></tr>
                 ))
               )}
             </tbody>
@@ -220,7 +223,7 @@ const CctvAiFeeds: React.FC<Props> = ({ camlink, title, showPeople }) => {
         </div>
       </div>
 
-      {/* MODAL POPUP */}
+      {/* POPUP MODAL */}
       {selectedVehicle && (
         <div className="rjb-modal-overlay" onClick={() => setSelectedVehicle(null)}>
           <div className="rjb-modal-content police-theme" onClick={(e) => e.stopPropagation()}>
@@ -231,7 +234,6 @@ const CctvAiFeeds: React.FC<Props> = ({ camlink, title, showPeople }) => {
               </div>
               <button className="rjb-modal-close" onClick={() => setSelectedVehicle(null)}>&times;</button>
             </div>
-
             <div className="rjb-modal-body">
               <div className="rjb-modal-grid">
                 <div className="rjb-modal-col">
@@ -240,40 +242,29 @@ const CctvAiFeeds: React.FC<Props> = ({ camlink, title, showPeople }) => {
                   <div className="rjb-detail-row"><span>Mobile No:</span> {selectedVehicle.mobileNumber}</div>
                   <div className="rjb-detail-row"><span>Aadhar No:</span> {selectedVehicle.aadharNumber}</div>
                   <div className="rjb-detail-row"><span>Address:</span> {selectedVehicle.address}</div>
-
                   <div className="rjb-section-title">Detection History</div>
                   <div className="rjb-detail-row"><span>Last Seen:</span> {selectedVehicle.time}</div>
                   <div className="rjb-detail-row"><span>Current Loc:</span> {selectedVehicle.location}</div>
                   <div className="rjb-detail-row"><span>Toll Route:</span> {selectedVehicle.tollgates}</div>
                 </div>
-
                 <div className="rjb-vertical-divider"></div>
-
                 <div className="rjb-modal-col">
                   <div className="rjb-section-title">Status Overview</div>
                   <div className="rjb-status-banner">
-                    <div className={`status-badge ${selectedVehicle.rcStatus.toLowerCase()}`}>
-                      RC: {selectedVehicle.rcStatus}
-                    </div>
-                    {selectedVehicle.isWanted && (
-                      <div className="status-badge alert-red">🚨 WANTED</div>
-                    )}
+                    <div className={`status-badge ${selectedVehicle.rcStatus.toLowerCase()}`}>RC: {selectedVehicle.rcStatus}</div>
+                    {selectedVehicle.isWanted && <div className="status-badge alert-red">🚨 WANTED</div>}
                   </div>
-
                   <div className="rjb-section-title">Vehicle & Legal Status</div>
                   <div className="rjb-detail-row"><span>Vehicle Type:</span> {selectedVehicle.vehicleType}</div>
                   <div className="rjb-detail-row"><span>Reg. Date:</span> {selectedVehicle.registrationDate}</div>
                   <div className="rjb-detail-row"><span>Insurance:</span> {selectedVehicle.insurance}</div>
                   <div className="rjb-detail-row"><span>Pollution:</span> {selectedVehicle.pollution}</div>
                   <div className="rjb-detail-row"><span>Challans:</span> 
-                    <b className={selectedVehicle.challans > 0 ? "text-danger" : ""}>
-                      {selectedVehicle.challans === 0 ? "None" : `₹ ${selectedVehicle.challans * 500}`}
-                    </b>
+                    <b className={selectedVehicle.challans > 0 ? "text-danger" : ""}>{selectedVehicle.challans === 0 ? "None" : `₹ ${selectedVehicle.challans * 500}`}</b>
                   </div>
                 </div>
               </div>
             </div>
-
             <div className="rjb-modal-footer">
               <button className="btn-action-print" onClick={() => window.print()}>Print Report</button>
               <button className="btn-action-close" onClick={() => setSelectedVehicle(null)}>Dismiss</button>
