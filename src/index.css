@@ -3866,3 +3866,240 @@ body{
 }
 
 /* ===== End of dark theme block ===== */
+/* CHANGE THIS BLOCK */
+.rjb-cctv-container {
+  /* Set a fixed height so it doesn't push the whole page down */
+  height: calc(100vh - 70px) !important; /* Adjust 70px to match your Header height */
+  
+  /* Enable scrolling ONLY inside this container */
+  overflow-y: auto !important; 
+  
+  /* Ensure it fills the dashboard area */
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+/* Optional: Make the scrollbar look cleaner */
+.rjb-cctv-container::-webkit-scrollbar {
+  width: 6px;
+}
+.rjb-cctv-container::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+/* Clickable Cell styling */
+.rjb-clickable-cell {
+  color: #1a73e8;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.rjb-clickable-cell:hover {
+  color: #0d47a1;
+}
+
+/* Modal Overlay */
+.rjb-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/* Modal Box */
+.rjb-modal-content {
+  background: white;
+  width: 450px;
+  max-width: 90%;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  position: relative;
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header */
+.rjb-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+}
+
+.rjb-modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #333;
+}
+
+.rjb-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #999;
+}
+
+.rjb-modal-close:hover {
+  color: #333;
+}
+
+/* Body Content */
+.rjb-detail-row {
+  margin-bottom: 12px;
+  font-size: 15px;
+  color: #444;
+}
+
+.rjb-detail-row span {
+  font-weight: bold;
+  color: #666;
+  width: 140px;
+  display: inline-block;
+}
+
+/* New Entry highlighting (Existing/Adjusted) */
+.rjb-new-entry {
+  background-color: #f0fdf4 !important; /* light green */
+  transition: background-color 0.5s ease;
+}
+
+
+
+/* Update the Modal Content width to accommodate two columns */
+.rjb-modal-content {
+  background: white;
+  width: 850px; /* Increased width */
+  max-width: 95%;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  position: relative;
+  animation: modalFadeIn 0.3s ease-out;
+  border-top: 5px solid #1a73e8; /* Police theme top accent */
+}
+
+/* Grid Layout for Two Columns */
+.rjb-modal-grid {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+}
+
+.rjb-modal-col {
+  flex: 1;
+  padding: 0 15px;
+}
+
+/* The Vertical Bar */
+.rjb-vertical-divider {
+  width: 1px;
+  background-color: #e0e0e0;
+  margin: 10px 0;
+  align-self: stretch;
+}
+
+.rjb-section-title {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #1a73e8;
+  margin-top: 15px;
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+
+.rjb-detail-row {
+  display: flex;
+  font-size: 13.5px;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.rjb-detail-row span {
+  width: 110px; /* Reduced width for shorter columns */
+  color: #777;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.rjb-v-number {
+  background: #222;
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Status Badges */
+.rjb-status-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.status-badge.active { background: #e6fffa; color: #2c7a7b; border: 1px solid #b2f5ea; }
+.status-badge.blacklisted { background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
+.status-badge.alert-red { background: #c53030; color: white; border: 1px solid #9b2c2c; }
+
+.text-danger { color: #d32f2f; }
+
+/* Modal Footer Buttons */
+.rjb-modal-footer {
+  margin-top: 25px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn-action-print {
+  background: #1a73e8;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-action-close {
+  background: #f1f3f4;
+  color: #3c4043;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-action-print:hover { background: #1557b0; }
+.btn-action-close:hover { background: #e8eaed; }
+
