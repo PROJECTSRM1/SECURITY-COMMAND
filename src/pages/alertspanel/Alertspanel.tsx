@@ -2,12 +2,24 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 // import "./AlertsPanel.css";
 
-import snap1 from "../../assets/susp1.webp";
-import snap2 from "../../assets/susp2.webp";
-import snap3 from "../../assets/susp3.webp";
-import snap4 from "../../assets/susp4.webp";
-import snap5 from "../../assets/susp5.webp";
-import snap6 from "../../assets/susp6.webp";
+// import snap1 from "../../assets/susp1.webp";
+// import snap2 from "../../assets/susp2.webp";
+// import snap3 from "../../assets/susp3.webp";
+// import snap4 from "../../assets/susp4.webp";
+// import snap5 from "../../assets/susp5.webp";
+// import snap6 from "../../assets/susp6.webp";
+
+/* ---------- Default Alert Snapshots ---------- */
+
+const SNAPSHOT_BY_TYPE: Record<string, string> = {
+  intrusion: "https://tse1.mm.bing.net/th/id/OIP.XVwIKo_qikYHxROdUz0TIAHaEm?w=850&h=528&rs=1&pid=ImgDetMain&o=7&rm=3",
+
+  motion: "https://www.mdpi.com/electronics/electronics-10-02974/article_deploy/html/images/electronics-10-02974-g003.png",
+
+  suspicious:
+    "https://www.researchgate.net/publication/363857453/figure/fig1/AS:11431281128945338@1679454722658/Challenges-in-crowd-counting-tasks-The-red-boxes-are-heads-of-different-scales-and-the_Q320.jpg"
+};
+
 
 /* ---------- Types ---------- */
 type Severity = "critical" | "high" | "medium" | "low";
@@ -32,7 +44,24 @@ type AlertRecord = {
 const LS = "rjb_alerts_v1";
 const SETTINGS_LS = "rjb_settings_v1";
 
-const SNAP_SAMPLES = [snap1, snap2, snap3, snap4, snap5, snap6];
+// const SNAP_SAMPLES = [snap1, snap2, snap3, snap4, snap5, snap6];
+function getSnapshotByType(alert: AlertRecord) {
+
+  const text = `${alert.title} ${alert.type}`.toLowerCase();
+
+  if (text.includes("intrusion"))
+    return SNAPSHOT_BY_TYPE.intrusion;
+
+  if (text.includes("motion"))
+    return SNAPSHOT_BY_TYPE.motion;
+
+  if (text.includes("suspicious"))
+    return SNAPSHOT_BY_TYPE.suspicious;
+
+  return SNAPSHOT_BY_TYPE.motion;
+}
+
+
 
 /* ---------- Helpers ---------- */
 function nowIso() {
@@ -59,27 +88,6 @@ function mapSnapshotUrl(url?: string | null) {
 
     // if it's already an absolute URL (http(s): or data:) just return it
     if (/^(data:|https?:\/\/)/i.test(asStr)) return asStr;
-
-    // Normalize candidate filename (remove query/hash, leading slash)
-    const fnameRaw = asStr.split(/[?#]/)[0].split("/").pop() || asStr;
-    const fname = fnameRaw.replace(/^\/+/, "").toLowerCase();
-    const stripExt = (s: string) => s.replace(/\.[^/.]+$/, "").toLowerCase();
-    const fnameBase = stripExt(fname);
-
-    for (const s of SNAP_SAMPLES) {
-      const sPath = String(s);
-      const sName = sPath.split("/").pop() || sPath;
-      const sBase = stripExt(sName);
-
-      // exact base match (best)
-      if (sBase === fnameBase) return s;
-
-      // if imported string contains the original filename (handles hashed imports)
-      if (sPath.toLowerCase().includes(fname)) return s;
-
-      // if filename endsWith (some bundlers)
-      if (sName.toLowerCase().endsWith(fname)) return s;
-    }
 
     // As a last-ditch, if the stored value looks like '/assets/susp1.webp', try prefixing with location.origin + that path
     if (asStr.startsWith("/")) {
@@ -210,7 +218,10 @@ export default function AlertsPanel() {
     setAlerts((prev) =>
       prev.map((a) => {
         if (a.source?.snapshotDataUrl) return a;
-        const snap = SNAP_SAMPLES[Math.floor(Math.random() * SNAP_SAMPLES.length)];
+        // const snap = SNAP_SAMPLES[Math.floor(Math.random() * SNAP_SAMPLES.length)];
+        const snap = getSnapshotByType(a);
+
+
         return { ...a, source: { ...a.source, snapshotDataUrl: snap } };
       })
     );
@@ -419,18 +430,14 @@ export default function AlertsPanel() {
               <div className="rjb-media">
                 {selected.source.snapshotDataUrl ? (
                   <img
-                    src={selected.source.snapshotDataUrl as any}
-                    alt="snapshot"
-                    onError={(e) => {
-                      const img = e.currentTarget as HTMLImageElement;
-                      // avoid infinite loop: mark fallback once
-                      if (!img.dataset.fallback) {
-                        img.dataset.fallback = "1";
-                        const snap = SNAP_SAMPLES[Math.floor(Math.random() * SNAP_SAMPLES.length)];
-                        img.src = snap;
-                      }
-                    }}
-                  />
+  src={selected.source.snapshotDataUrl || getSnapshotByType(selected)}
+  alt="snapshot"
+  onError={(e) => {
+    const img = e.currentTarget as HTMLImageElement;
+    img.src = getSnapshotByType(selected);
+  }}
+/>
+
                 ) : (
                   <div className="rjb-media-empty">No snapshot</div>
                 )}

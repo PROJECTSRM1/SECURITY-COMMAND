@@ -382,7 +382,7 @@ body{
 }
 
 /* overlay / modal / viewer */
-.rjb-ops-overlay {
+/* .rjb-ops-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.45);
@@ -390,6 +390,9 @@ body{
   align-items: center;
   justify-content: center;
   z-index: 2200;
+    overflow-y: auto;
+  align-items: flex-start;
+  padding-top: 40px;
 }
 
 .rjb-ops-modal {
@@ -398,7 +401,59 @@ body{
   width: 420px;
   border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+} */
+
+
+/* ---------- Overlay ---------- */
+.rjb-ops-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  overflow: visible;    /* ⭐ allow dropdown */
+  z-index: 2200;
 }
+
+
+
+/* ---------- Modal ---------- */
+.rjb-ops-modal {
+  background: #ffffff;
+  width: 420px;
+  max-width: 100%;
+  border-radius: 16px;
+  padding: 24px 22px;
+  box-shadow: 0 20px 55px rgba(0,0,0,0.18);
+  border: 1px solid #e5e7eb;
+
+  /* ⭐ FIX dropdown issue */
+  overflow: visible ;
+  position: relative;
+
+  /* ⭐ Smooth animation */
+  animation: rjbModalFade 0.25s ease;
+}
+
+
+/* ---------- Animation ---------- */
+@keyframes rjbModalFade {
+  from {
+    opacity: 0;
+    transform: translateY(25px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+
+
 
 /* modal fields */
 .rjb-ops-modal h3 { margin-top: 0; }
@@ -440,6 +495,147 @@ body{
 .rjb-ops-close-wrap {
   margin-top: 12px;
   text-align: right;
+}
+
+.rjb-view-modal {
+  width: 420px;
+  background: white;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.rjb-view-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.rjb-view-avatar {
+  width: 60px;
+  height: 60px;
+  background: #1e3a8a;
+  color: white;
+  font-size: 22px;
+  font-weight: bold;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rjb-rank-badge {
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.rjb-view-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.rjb-view-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.id-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.police-id-card {
+  width: 380px;
+  /* background: linear-gradient(135deg, #0f172a, #1e293b); */
+  background: white;
+  color: #1e293b;
+  border-radius: 18px;
+  padding: 26px;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+  animation: fadeCard 0.3s ease;
+}
+
+@keyframes fadeCard {
+  from { opacity:0; transform: translateY(20px);}
+  to { opacity:1; transform: translateY(0);}
+}
+
+.id-header {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  padding-bottom: 16px;
+}
+
+.id-avatar {
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  background: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: bold;
+}
+
+.id-header-info h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.id-rank {
+  margin-top: 4px;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.id-body {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.id-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+}
+
+.status-active {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.status-inactive {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.id-close-btn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 10px;
+  background: #2563eb;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
 }
 
 
@@ -4339,13 +4535,36 @@ body{
 .rjb-crowd-left .rjb-cctv-video-wrap {
   width: 100%;
   height: 100%;
+  object-fit: cover;
 }
 
-.rjb-cctv-iframe1 {
+/* .rjb-cctv-iframe1 {
   width: 100%;
   height: 100%;
   border-radius: 14px;
+} */
+
+.rjb-cctv-video-wrap {
+  position: relative;
+  width: 100%;
+  height: 70vh;
+  overflow: hidden;
+  background: #000;
+  border-radius: 16px;
 }
+
+/* 🔑 HARD FIX */
+.rjb-cctv-iframe1 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200%;
+  height: 100%;
+  transform: translate(-50%, -50%);
+  border: none;
+}
+
+
 
 /* TABLE RIGHT */
 .rjb-crowd-right {

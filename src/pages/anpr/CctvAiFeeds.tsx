@@ -237,7 +237,7 @@ return showPeople ? (
 ) : (
 
 
-    <div className="rjb-cctv-container rjb-cctv-vertical">
+    <div className="rjb-cctv-container rjb-cctv-vertical">        
       
       {/* 4 TABS ABOVE VIDEO */}
       <div className="rjb-tabs-wrapper">
