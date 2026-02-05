@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { Search, Upload, User, FileText, MapPin, Clock, AlertTriangle, Camera, Shield, Car, CheckCircle, ChevronRight, Eye, X } from 'lucide-react';
 import './CriminalRecord.css';
 

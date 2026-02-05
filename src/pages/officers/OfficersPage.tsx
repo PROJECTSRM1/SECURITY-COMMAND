@@ -13,23 +13,65 @@ type Officer = {
   lastSeen: string; // ISO timestamp
   notes?: string;
 };
+import Select from "react-select";
+
 
 const LS_KEY = "rjb_officers_v1";
 const SETTINGS_LS = "rjb_settings_v1";
+
+const POLICE_RANKS = [
+  "Constable",
+  "Head Constable",
+  "Assistant Sub Inspector (ASI)",
+  "Sub Inspector (SI)",
+  "Inspector",
+  "Deputy Superintendent (DSP)",
+  "Additional SP",
+  "Superintendent of Police (SP)",
+  "Senior Superintendent of Police (SSP)",
+  "Deputy Inspector General (DIG)",
+  "Inspector General (IG)",
+  "Additional Director General (ADGP)",
+  "Director General of Police (DGP)"
+];
+
+const rankOptions = POLICE_RANKS.map(rank => ({
+  label: rank,
+  value: rank
+}));
+
 
 function nowIso() {
   return new Date().toISOString();
 }
 
+// function loadOfficersLocal(): Officer[] {
+//   try {
+//     const raw = localStorage.getItem(LS_KEY);
+//     if (!raw) return [];
+//     return JSON.parse(raw) as Officer[];
+//   } catch {
+//     return [];
+//   }
+// }
+
 function loadOfficersLocal(): Officer[] {
   try {
     const raw = localStorage.getItem(LS_KEY);
     if (!raw) return [];
-    return JSON.parse(raw) as Officer[];
+
+    const list = JSON.parse(raw) as Officer[];
+
+    return list.map(o => ({
+      ...o,
+      position: normalizeRank(o.position || "")
+    }));
+
   } catch {
     return [];
   }
 }
+
 function saveOfficersLocal(list: Officer[]) {
   try {
     localStorage.setItem(LS_KEY, JSON.stringify(list));
@@ -53,17 +95,31 @@ function createLocalId() {
   return "local-" + Math.random().toString(36).slice(2, 9);
 }
 
+
+
+function normalizeRank(pos: string) {
+  if (!pos) return "";
+
+  const lower = pos.toLowerCase();
+
+  if (lower === "admin") return "Inspector";   //  change default here
+  return pos;
+}
+
 /* ----- Helper: map API user object -> Officer ------ 
    Adjust mapping if your backend returns different field names.
 */
 function mapApiToOfficer(apiObj: any): Officer {
+  const rawPosition = apiObj.position ?? apiObj.role ?? "";
+
   // attempt typical fields, fallback to reasonable defaults
   return {
     id: String(apiObj.id ?? apiObj._id ?? createLocalId()),
     name: apiObj.name ?? apiObj.fullName ?? apiObj.username ?? "Unknown",
     badge: apiObj.badge ?? apiObj.employeeBadge ?? "",
     phone: apiObj.phone ?? apiObj.mobile ?? "",
-    position: apiObj.position ?? apiObj.role ?? "",
+    // position: apiObj.position ?? apiObj.role ?? "",
+    position: normalizeRank(rawPosition),
     imei: apiObj.imei ?? apiObj.deviceImei ?? "",
     active: apiObj.active === undefined ? true : Boolean(apiObj.active),
     lastSeen: apiObj.lastSeen ?? apiObj.updatedAt ?? nowIso(),
@@ -86,6 +142,17 @@ function buildCreatePayload(o: Officer) {
   };
 }
 
+function generateDummyBadge(id: string) {
+  const num = id.replace(/\D/g, "").slice(-4) || Math.floor(1000 + Math.random() * 9000);
+  return `POL-${num}`;
+}
+
+function generateDummyIMEI() {
+  const random = Math.random().toString(36).substring(2, 10).toUpperCase();
+  return `DEV-${random}`;
+}
+
+
 export default function OfficersPage() {
   const [officers, setOfficers] = useState<Officer[]>(() => loadOfficersLocal());
   const [query, setQuery] = useState("");
@@ -97,6 +164,7 @@ export default function OfficersPage() {
   const [saving, setSaving] = useState(false);
   const [nowTick, setNowTick] = useState(Date.now());
   const escalateIfOfflineHours = useMemo(() => loadEscalateHours(), [nowTick]);
+  
 
   useEffect(() => {
     // Try to load from API, fallback to local storage on error.
@@ -350,7 +418,7 @@ export default function OfficersPage() {
       )}
 
       {/* Small viewer for selected officer */}
-      {selectedView && (
+      {/* {selectedView && (
         <div className="rjb-ops-overlay" onClick={() => setSelectedView(null)}>
           <div className="rjb-ops-map" onClick={(e) => e.stopPropagation()}>
             <h3>{selectedView.name} — {selectedView.badge}</h3>
@@ -368,7 +436,59 @@ export default function OfficersPage() {
 
           </div>
         </div>
-      )}
+      )} */}
+{selectedView && (
+  <div className="id-overlay" onClick={() => setSelectedView(null)}>
+    <div className="police-id-card" onClick={(e) => e.stopPropagation()}>
+
+      {/* Header */}
+      <div className="id-header">
+        <div className="id-avatar">
+          {selectedView.name?.[0]}
+        </div>
+
+        <div className="id-header-info">
+          <h2>{selectedView.name}</h2>
+          <p className="id-rank">{selectedView.position || "Constable"}</p>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="id-body">
+
+        <div className="id-row">
+          <span>Badge No</span>
+          <strong>{selectedView.badge || generateDummyBadge(selectedView.id)}</strong>
+        </div>
+
+        <div className="id-row">
+          <span>Device IMEI</span>
+          <strong>{selectedView.imei || generateDummyIMEI()}</strong>
+        </div>
+
+        <div className="id-row">
+          <span>Phone</span>
+          <strong>{selectedView.phone || "Not Registered"}</strong>
+        </div>
+
+        <div className="id-row">
+          <span>Status</span>
+          <strong className={selectedView.active ? "status-active" : "status-inactive"}>
+            {selectedView.active ? "ACTIVE" : "INACTIVE"}
+          </strong>
+        </div>
+
+      </div>
+
+      <button className="id-close-btn" onClick={() => setSelectedView(null)}>
+        Close
+      </button>
+
+    </div>
+  </div>
+)}
+
+
     </div>
   );
 }
@@ -410,8 +530,61 @@ function OfficerModal({ officer, onClose, onSave, saving }: { officer: Officer; 
         <label className="rjb-ops-label">Phone</label>
         <input className="rjb-ops-input" value={local.phone || ""} onChange={(e) => setField("phone", e.target.value)} />
 
-        <label className="rjb-ops-label">Position</label>
-        <input className="rjb-ops-input" value={local.position || ""} onChange={(e) => setField("position", e.target.value)} />
+        {/* <label className="rjb-ops-label">Position</label> */}
+        {/* <input className="rjb-ops-input" value={local.position || ""} onChange={(e) => setField("position", e.target.value)} /> */}
+<label className="rjb-ops-label">Police Rank</label>
+<Select
+  options={rankOptions}
+  value={rankOptions.find(r => r.value === local.position)}
+  onChange={(selected) => setField("position", selected?.value || "")}
+  placeholder="Select Rank"
+
+  menuPlacement="auto"
+  menuPosition="fixed"
+  menuPortalTarget={document.body}
+
+  styles={{
+    container: (base) => ({
+      ...base,
+      width: "100%"
+    }),
+
+    control: (base, state) => ({
+      ...base,
+      borderRadius: "10px",
+      padding: "2px",
+      borderColor: state.isFocused ? "#2563eb" : "rgba(15,23,36,0.08)",
+      boxShadow: "none",
+      minHeight: "38px",
+      fontSize: "14px"
+    }),
+
+    menuPortal: (base) => ({
+      ...base,
+      zIndex: 9999
+    }),
+
+    menu: (base) => ({
+      ...base,
+      borderRadius: "10px",
+      overflow: "hidden"
+    }),
+
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? "#2563eb"
+        : state.isFocused
+        ? "#e0f2fe"
+        : "white",
+      color: state.isSelected ? "white" : "#111827",
+      cursor: "pointer"
+    })
+  }}
+/>
+
+
+
 
         <label className="rjb-ops-label">IMEI</label>
         <input className="rjb-ops-input" value={local.imei || ""} onChange={(e) => setField("imei", e.target.value)} />
